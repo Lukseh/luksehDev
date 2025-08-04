@@ -7,7 +7,15 @@ This directory contains deployment files for the Lukseh.dev portfolio supporting
 
 ## 🚀 Quick Deployment
 
-### For Proxmox VE (PVE)
+### Option 1: Community Script (Recommended)
+Use the Proxmox VE Helper Scripts pattern:
+
+```bash
+# In Proxmox VE shell
+bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev.sh)
+```
+
+### Option 2: Manual Proxmox VE (PVE)
 ```bash
 # Make deployment script executable
 chmod +x deploy/deploy-pve.sh deploy/manage-pve.sh
@@ -17,7 +25,7 @@ cd deploy
 ./deploy-pve.sh
 ```
 
-### For LXC/LXD
+### Option 3: LXC/LXD
 ```bash
 # Make deployment script executable
 chmod +x deploy/deploy-lxc.sh deploy/manage-lxc.sh
@@ -30,7 +38,10 @@ cd deploy
 ## 📁 Deployment Files
 
 ### Core Deployment
-- `deploy-pve.sh` - Proxmox VE deployment script
+- `lukseh-dev.sh` - **Community Script (Recommended)** - Proxmox VE Helper Scripts pattern
+- `lukseh-dev-install.sh` - Installation function for community script
+- `COMMUNITY-SCRIPT.md` - Documentation for community script submission
+- `deploy-pve.sh` - Manual Proxmox VE deployment script
 - `manage-pve.sh` - Proxmox VE management script
 - `deploy-lxc.sh` - LXC/LXD deployment script
 - `manage-lxc.sh` - LXC/LXD management script
