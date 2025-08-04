@@ -210,6 +210,20 @@ Point your domain to the Argo Tunnel:
 ## 🔍 Troubleshooting
 
 ### Service Issues
+
+#### For Proxmox VE:
+```bash
+# Check PM2 processes
+pct exec 100 -- su - lukseh -c "pm2 status"
+
+# Check Nginx status  
+pct exec 100 -- systemctl status nginx
+
+# View detailed logs
+./manage-pve.sh logs all
+```
+
+#### For LXC/LXD:
 ```bash
 # Check PM2 processes
 lxc exec lukseh-dev -- su - lukseh -c "pm2 status"
@@ -222,6 +236,18 @@ lxc exec lukseh-dev -- systemctl status nginx
 ```
 
 ### Network Issues
+
+#### For Proxmox VE:
+```bash
+# Test internal connectivity
+pct exec 100 -- curl http://localhost:5188/health
+pct exec 100 -- curl http://localhost:3000/health
+
+# Check port bindings
+pct exec 100 -- netstat -tlnp
+```
+
+#### For LXC/LXD:
 ```bash
 # Test internal connectivity
 lxc exec lukseh-dev -- curl http://localhost:5188/health
@@ -232,6 +258,17 @@ lxc exec lukseh-dev -- netstat -tlnp
 ```
 
 ### Argo Tunnel Issues
+
+#### For Proxmox VE:
+```bash
+# Check tunnel status
+./manage-pve.sh tunnel status
+
+# View tunnel logs
+pct exec 100 -- journalctl -u cloudflared -f
+```
+
+#### For LXC/LXD:
 ```bash
 # Check tunnel status
 ./manage-lxc.sh tunnel status
@@ -250,7 +287,7 @@ lxc exec lukseh-dev -- journalctl -u cloudflared -f
 
 ## 🚀 Production Checklist
 
-- [ ] LXC container created and running
+- [ ] Container created and running (PVE: `pct status 100`, LXD: `lxc list`)
 - [ ] Deployment script executed successfully  
 - [ ] All services running (PM2 + Nginx)
 - [ ] API keys configured in production settings
@@ -263,6 +300,17 @@ lxc exec lukseh-dev -- journalctl -u cloudflared -f
 ## 📊 Monitoring
 
 ### Service Health
+
+#### For Proxmox VE:
+```bash
+# Continuous monitoring
+watch ./manage-pve.sh health
+
+# Log monitoring
+./manage-pve.sh logs all | grep ERROR
+```
+
+#### For LXC/LXD:
 ```bash
 # Continuous monitoring
 watch ./manage-lxc.sh health
@@ -284,6 +332,18 @@ watch ./manage-lxc.sh health
 3. Services will be rebuilt and restarted automatically
 
 ### System Updates
+
+#### For Proxmox VE:
+```bash
+# Update container packages
+pct exec 100 -- apt update && apt upgrade -y
+
+# Update Node.js dependencies
+pct exec 100 -- bash -c "cd $APP_DIR/node-proxy && npm update"
+pct exec 100 -- bash -c "cd $APP_DIR/frontend-vue && npm update"
+```
+
+#### For LXC/LXD:
 ```bash
 # Update container packages
 lxc exec lukseh-dev -- apt update && apt upgrade -y

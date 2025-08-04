@@ -111,17 +111,17 @@ setup_services() {
     
     # Build .NET backend
     log "Building .NET backend..."
-    pct exec $CONTAINER_ID --cwd $APP_DIR/backend -- dotnet restore
-    pct exec $CONTAINER_ID --cwd $APP_DIR/backend -- dotnet build -c Release
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR/backend && dotnet restore"
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR/backend && dotnet build -c Release"
     
     # Install Node.js dependencies for proxy
     log "Installing proxy dependencies..."
-    pct exec $CONTAINER_ID --cwd $APP_DIR/node-proxy -- npm install --production
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR/node-proxy && npm install --production"
     
     # Build Vue.js frontend
     log "Building Vue.js frontend..."
-    pct exec $CONTAINER_ID --cwd $APP_DIR/frontend-vue -- npm install
-    pct exec $CONTAINER_ID --cwd $APP_DIR/frontend-vue -- npm run build
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR/frontend-vue && npm install"
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR/frontend-vue && npm run build"
     
     # Setup Nginx for frontend
     log "Setting up Nginx..."
@@ -173,7 +173,7 @@ module.exports = {
 EOF
     
     pct push $CONTAINER_ID /tmp/ecosystem.config.js $APP_DIR/ecosystem.config.js
-    pct exec $CONTAINER_ID --cwd $APP_DIR -- chown $PVE_USER:$PVE_USER ecosystem.config.js
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR && chown $PVE_USER:$PVE_USER ecosystem.config.js"
     rm /tmp/ecosystem.config.js
     
     log "PM2 ecosystem configured"
@@ -184,7 +184,7 @@ start_services() {
     log "Starting services..."
     
     # Start PM2 services as the lukseh user
-    pct exec $CONTAINER_ID --cwd $APP_DIR -- su - $PVE_USER -c "pm2 start ecosystem.config.js"
+    pct exec $CONTAINER_ID -- bash -c "cd $APP_DIR && su - $PVE_USER -c 'pm2 start ecosystem.config.js'"
     pct exec $CONTAINER_ID -- su - $PVE_USER -c "pm2 save"
     pct exec $CONTAINER_ID -- su - $PVE_USER -c "pm2 startup systemd -u $PVE_USER --hp /home/$PVE_USER" || true
     
