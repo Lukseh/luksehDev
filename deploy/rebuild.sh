@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Lukseh.dev Portfolio Rebuild Script
+# Lukseh.dev Portfolio Rebuild/Install Script
 # Copyright (c) 2025 Lukseh
 # License: MIT
 
@@ -18,7 +18,7 @@ msg_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 msg_ok() { echo -e "${GREEN}✅ $1${NC}"; }
 msg_error() { echo -e "${RED}❌ $1${NC}"; exit 1; }
 
-echo -e "${BLUE}🔄 Rebuilding Lukseh.dev Portfolio${NC}"
+echo -e "${BLUE}🔄 Lukseh.dev Portfolio Setup${NC}"
 echo ""
 
 # Check if running as root
@@ -28,8 +28,42 @@ fi
 
 # Check if installation exists
 if [[ ! -d "/opt/lukseh.dev" ]]; then
-    msg_error "Lukseh.dev installation not found at /opt/lukseh.dev"
+    msg_info "Installation not found - running full installation"
+    
+    # Try to download and run the install script
+    if curl -fsSL -k https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev-install.sh >/dev/null 2>&1; then
+        bash <(curl -fsSL -k https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev-install.sh)
+    else
+        msg_info "Download failed - running manual installation"
+        
+        # Manual installation fallback
+        msg_info "Creating lukseh user"
+        useradd -m -s /bin/bash lukseh >/dev/null 2>&1 || true
+        usermod -aG sudo lukseh >/dev/null 2>&1 || true
+        msg_ok "Created lukseh user"
+        
+        msg_info "Installing basic dependencies"
+        apt-get update >/dev/null 2>&1
+        apt-get install -y git >/dev/null 2>&1
+        msg_ok "Installed dependencies"
+        
+        msg_info "Creating application directory"
+        mkdir -p /opt/lukseh.dev
+        chown lukseh:lukseh /opt/lukseh.dev
+        msg_ok "Created application directory"
+        
+        msg_info "Cloning repository"
+        cd /opt/lukseh.dev
+        sudo -u lukseh git clone https://github.com/Lukseh/luksehDev.git . >/dev/null 2>&1
+        msg_ok "Cloned repository"
+        
+        msg_info "Please install Node.js, .NET, and PM2 manually, then run this script again"
+        exit 0
+    fi
+    exit 0
 fi
+
+msg_info "Installation found - rebuilding"
 
 msg_info "Stopping services"
 sudo -u lukseh pm2 stop all >/dev/null 2>&1 || true
