@@ -5,7 +5,7 @@ import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5001';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5188';
 
 // Middleware
 app.use(cors());

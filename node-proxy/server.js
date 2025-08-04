@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
     message: 'lukseh.dev Node.js Proxy Server',
     version: '1.0.0',
     services: {
-      frontend: 'http://localhost:5173',
+      frontend: 'http://localhost:5174',
       backend: BACKEND_URL,
       proxy: `http://localhost:${PORT}`
     },
@@ -72,7 +72,7 @@ app.get('/api/social/:username', async (req, res) => {
     if (error.code === 'ECONNREFUSED') {
       res.status(503).json({
         success: false,
-        error: 'Backend service unavailable. Make sure the .NET API is running on port 5001.',
+        error: 'Backend service unavailable. Make sure the .NET API is running on port 5188.',
         details: error.message
       });
     } else if (error.response) {

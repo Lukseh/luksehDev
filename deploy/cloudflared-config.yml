@@ -1,0 +1,14 @@
+tunnel: lukseh-dev-tunnel
+credentials-file: /home/lukseh/.cloudflared/lukseh-dev-tunnel.json
+
+ingress:
+  # Route to frontend (port 80)
+  - hostname: lukseh.dev
+    service: http://localhost:80
+  
+  # Route to API through proxy
+  - hostname: api.lukseh.dev
+    service: http://localhost:3000
+    
+  # Catch-all rule (required)
+  - service: http_status:404

@@ -38,7 +38,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "Build Backend",
-            "program": "${workspaceFolder}/backend/bin/Debug/net9.0/.NET.exe",
+            "program": "${workspaceFolder}/backend/bin/Debug/net9.0/LuksehDev.Backend.exe",
             "args": [],
             "cwd": "${workspaceFolder}/backend",
             "stopAtEntry": false,

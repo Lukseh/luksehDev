@@ -1,8 +1,12 @@
-# Frontend (Node.js/TypeScript)
+# Frontend (Node.js/TypeScript/Vue.js)
 frontend/node_modules/
 frontend/dist/
 frontend/*.log
 frontend/.env*
+frontend-vue/node_modules/
+frontend-vue/dist/
+frontend-vue/*.log
+frontend-vue/.env*
 
 # Backend (.NET)
 backend/bin/
@@ -69,3 +73,15 @@ pids/
 # Old folders (can be removed after migration)
 .NET/
 Node.ts/
+
+# Deployment secrets and configs
+deploy/secrets/
+**/appsettings.Production.json
+.cloudflared/
+*.pem
+*.key
+*.crt
+
+# Docker
+docker-compose.override.yml
+.dockerignore

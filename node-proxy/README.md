@@ -5,7 +5,7 @@ A minimal Express proxy server that bridges the Vue.js frontend with the .NET ba
 ## Purpose
 - Handles CORS for cross-origin requests between frontend and backend
 - Provides a unified API interface for the Vue.js application
-- Acts as a middleware layer between frontend (port 5173) and backend (port 5001)
+- Acts as a middleware layer between frontend (port 5174) and backend (port 5188)
 
 ## Features
 - **Health Check**: `/health` endpoint for service monitoring
@@ -42,7 +42,7 @@ Fetches LinkedIn profile information.
 
 ## Environment Variables
 - `PORT`: Server port (default: 3000)
-- `BACKEND_URL`: .NET backend URL (default: http://localhost:5001)
+- `BACKEND_URL`: .NET backend URL (default: http://localhost:5188)
 
 ## Usage
 
@@ -58,7 +58,7 @@ npm start
 
 ## CORS Configuration
 Configured to allow requests from:
-- `http://localhost:5173` (Vite dev server)
+- `http://localhost:5174` (Vite dev server)
 - `http://localhost:4173` (Vite preview)
 - `http://localhost:3000` (proxy server)
 
@@ -70,6 +70,6 @@ Configured to allow requests from:
 
 ## Integration
 This proxy server works with:
-- **Frontend**: Vue.js + Vuetify (port 5173)
-- **Backend**: .NET Web API (port 5001)
+- **Frontend**: Vue.js + Vuetify (port 5174)
+- **Backend**: .NET Web API (port 5188)
 - **APIs**: GitHub API, LinkedIn API (via backend)
