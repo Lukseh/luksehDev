@@ -341,7 +341,7 @@ export default {
         loading.value = true
         error.value = null
         
-        const response = await axios.get('http://localhost:3000/api/social/lukseh')
+        const response = await axios.get('/api/social/lukseh')
         
         if (response.data?.success && response.data?.data?.gitHub?.repos) {
           repos.value = response.data.data.gitHub.repos
