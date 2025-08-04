@@ -1,9 +1,23 @@
-# Lukseh.dev LXC Deployment
+# Lukseh.dev Container Deployment
 
-This directory contains all the necessary files for deploying the Lukseh.dev portfolio to an LXC container with Argo Tunnel support.
+This directory contains deployment files for the Lukseh.dev portfolio supporting multiple container platforms:
+- **Proxmox VE Containers** (recommended for PVE hosts)
+- **LXC/LXD Containers** (for Ubuntu/other Linux hosts)
+- **Docker Containers** (universal containerization)
 
 ## 🚀 Quick Deployment
 
+### For Proxmox VE (PVE)
+```bash
+# Make deployment script executable
+chmod +x deploy/deploy-pve.sh deploy/manage-pve.sh
+
+# Run the deployment
+cd deploy
+./deploy-pve.sh
+```
+
+### For LXC/LXD
 ```bash
 # Make deployment script executable
 chmod +x deploy/deploy-lxc.sh deploy/manage-lxc.sh
@@ -16,9 +30,11 @@ cd deploy
 ## 📁 Deployment Files
 
 ### Core Deployment
-- `deploy-lxc.sh` - Main deployment script
-- `manage-lxc.sh` - Service management script
-- `docker-compose.yml` - Alternative Docker deployment
+- `deploy-pve.sh` - Proxmox VE deployment script
+- `manage-pve.sh` - Proxmox VE management script
+- `deploy-lxc.sh` - LXC/LXD deployment script
+- `manage-lxc.sh` - LXC/LXD management script
+- `docker-compose.yml` - Docker deployment
 
 ### Application Configuration
 - `Dockerfile.backend` - .NET backend container
@@ -35,7 +51,7 @@ cd deploy
 ```
 Internet
     ↓ (Argo Tunnel)
-LXC Container
+Proxmox VE Container / LXC Container
     ├── Nginx (Port 80) → Vue.js SPA
     ├── Node Proxy (Port 3000) → API Gateway  
     └── .NET Backend (Port 5188) → GitHub/LinkedIn APIs
@@ -43,7 +59,23 @@ LXC Container
 
 ## 📋 Prerequisites
 
-### LXC Container Setup
+### For Proxmox VE
+```bash
+# Create Ubuntu 22.04 container
+pct create 100 local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst \
+  --hostname lukseh-dev \
+  --memory 2048 \
+  --cores 2 \
+  --rootfs local-lvm:8 \
+  --net0 name=eth0,bridge=vmbr0,ip=dhcp \
+  --start
+
+# Configure container (optional)
+pct set 100 --memory 4096
+pct set 100 --cores 4
+```
+
+### For LXC/LXD
 ```bash
 # Create Ubuntu 22.04 LXC container
 lxc launch ubuntu:22.04 lukseh-dev
@@ -54,14 +86,15 @@ lxc config set lukseh-dev limits.memory 2GB
 ```
 
 ### Required on Host
-- LXC/LXD installed and configured
+- **Proxmox VE**: PVE host with container template
+- **LXC/LXD**: LXC/LXD installed and configured
 - Access to container management
 - Cloudflare account (for Argo Tunnel)
 
 ## 🔧 Deployment Process
 
 ### 1. Automatic Setup
-The `deploy-lxc.sh` script handles:
+The deployment scripts handle:
 - ✅ Container environment setup (Node.js, .NET, Nginx)
 - ✅ Application file deployment
 - ✅ Service building and configuration
@@ -72,6 +105,22 @@ The `deploy-lxc.sh` script handles:
 ### 2. Manual Steps Required
 After deployment, you need to:
 
+#### For Proxmox VE:
+```bash
+# 1. Authenticate Cloudflare tunnel
+pct exec 100 -- cloudflared tunnel login
+
+# 2. Create tunnel
+pct exec 100 -- cloudflared tunnel create lukseh-dev-tunnel
+
+# 3. Copy config file
+pct push 100 cloudflared-config.yml /home/lukseh/.cloudflared/config.yml
+
+# 4. Start tunnel
+pct exec 100 -- cloudflared tunnel run lukseh-dev-tunnel
+```
+
+#### For LXC/LXD:
 ```bash
 # 1. Authenticate Cloudflare tunnel
 lxc exec lukseh-dev -- cloudflared tunnel login
@@ -93,6 +142,35 @@ Point your domain to the Argo Tunnel:
 
 ## 🎛️ Service Management
 
+### For Proxmox VE:
+```bash
+# Check service status
+./manage-pve.sh status
+
+# View logs
+./manage-pve.sh logs backend
+./manage-pve.sh logs proxy
+./manage-pve.sh logs nginx
+
+# Restart services
+./manage-pve.sh restart all
+./manage-pve.sh restart backend
+
+# Health checks
+./manage-pve.sh health
+
+# Manage tunnel
+./manage-pve.sh tunnel start
+./manage-pve.sh tunnel stop
+
+# Open container shell
+./manage-pve.sh shell
+
+# Container backup
+./manage-pve.sh backup
+```
+
+### For LXC/LXD:
 ```bash
 # Check service status
 ./manage-lxc.sh status
