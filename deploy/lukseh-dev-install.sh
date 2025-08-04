@@ -92,73 +92,46 @@ sudo -u lukseh dotnet restore >/dev/null 2>&1
 sudo -u lukseh dotnet build -c Release >/dev/null 2>&1
 msg_ok "Built Backend"
 
+msg_info "Creating Production Configuration"
+# Create production appsettings if it doesn't exist
+if [[ ! -f "/opt/lukseh.dev/backend/appsettings.Production.json" ]]; then
+    sudo -u lukseh cat <<EOF >/opt/lukseh.dev/backend/appsettings.Production.json
+{
+  "ApiSettings": {
+    "GitHubToken": "your_github_token_here",
+    "LinkedInAccessToken": "your_linkedin_access_token_here", 
+    "LinkedInClientSecret": "your_linkedin_client_secret_here",
+    "LinkedInProfileId": "lukseh74"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://0.0.0.0:5188"
+      }
+    }
+  }
+}
+EOF
+fi
+msg_ok "Created Production Configuration"
+
 msg_info "Configuring Nginx"
 # Copy frontend dist to nginx
 rm -rf /var/www/html/*
 cp -r /opt/lukseh.dev/frontend-vue/dist/* /var/www/html/
 
-# Copy nginx configuration if it exists
-if [[ -f "/opt/lukseh.dev/frontend-vue/nginx.conf" ]]; then
-    cp /opt/lukseh.dev/frontend-vue/nginx.conf /etc/nginx/sites-available/default
-fi
-
-# Test nginx config
-nginx -t >/dev/null 2>&1
-msg_ok "Configured Nginx"
-
-msg_info "Setting up PM2 for lukseh user"
-# Initialize PM2 directories with correct ownership
-sudo -u lukseh mkdir -p /home/lukseh/.pm2/{logs,pids,modules}
-sudo -u lukseh touch /home/lukseh/.pm2/{module_conf.json,pm2.log,pm2.pid}
-
-# Start services with PM2 as lukseh user
-cd /opt/lukseh.dev
-sudo -u lukseh bash -c '
-    cd /opt/lukseh.dev/backend
-    pm2 start "dotnet run --configuration Release" --name "backend" --cwd "/opt/lukseh.dev/backend"
-    
-    cd /opt/lukseh.dev/node-proxy  
-    pm2 start "npm start" --name "proxy" --cwd "/opt/lukseh.dev/node-proxy"
-    
-    pm2 save
-'
-msg_ok "Started PM2 Services"
-
-msg_info "Setting up PM2 system service"
-# Setup PM2 to start on boot
-sudo -u lukseh bash -c 'pm2 startup systemd -u lukseh --hp /home/lukseh' | grep -E '^sudo ' | bash
-systemctl enable pm2-lukseh >/dev/null 2>&1
-systemctl start pm2-lukseh >/dev/null 2>&1
-msg_ok "Configured PM2 System Service"
-
-msg_info "Starting Nginx"
-systemctl enable nginx >/dev/null 2>&1
-systemctl restart nginx >/dev/null 2>&1
-msg_ok "Started Nginx"
-
-msg_info "Installing Cloudflared"
-
-msg_info "Installing Backend Dependencies"
-cd /opt/lukseh.dev/backend
-$STD dotnet restore
-$STD dotnet build -c Release
-msg_ok "Built .NET Backend"
-
-msg_info "Installing Proxy Dependencies"
-cd /opt/lukseh.dev/node-proxy
-$STD npm install --production
-msg_ok "Installed Proxy Dependencies"
-
-msg_info "Installing Frontend Dependencies"
-cd /opt/lukseh.dev/frontend-vue
-$STD npm install
-$STD npm run build
-msg_ok "Built Vue.js Frontend"
-
-msg_info "Configuring Nginx"
-cat <<EOF >/etc/nginx/sites-available/lukseh-dev
+# Create enhanced nginx configuration
+cat <<EOF >/etc/nginx/sites-available/default
 server {
-    listen 80;
+    listen 80 default_server;
+    listen [::]:80 default_server;
     server_name _;
     root /var/www/html;
     index index.html;
@@ -192,43 +165,57 @@ server {
         proxy_cache_bypass \$http_upgrade;
     }
 
+    # Direct backend access (optional)
+    location /direct-api/ {
+        rewrite ^/direct-api/(.*) /\$1 break;
+        proxy_pass http://localhost:5188;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
     # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
-    # Security
+    # Security - deny access to hidden files
     location ~ /\. {
         deny all;
     }
 }
 EOF
 
-ln -sf /etc/nginx/sites-available/lukseh-dev /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
-
-# Copy built frontend to nginx directory
-rm -rf /var/www/html/*
-cp -r /opt/lukseh.dev/frontend-vue/dist/* /var/www/html/
+# Test nginx config
+nginx -t >/dev/null 2>&1
 msg_ok "Configured Nginx"
 
-msg_info "Creating PM2 Ecosystem"
-cat <<EOF >/opt/lukseh.dev/ecosystem.config.js
+msg_info "Setting up PM2 for lukseh user"
+# Initialize PM2 directories with correct ownership
+sudo -u lukseh mkdir -p /home/lukseh/.pm2/{logs,pids,modules}
+sudo -u lukseh touch /home/lukseh/.pm2/{module_conf.json,pm2.log,pm2.pid}
+
+# Create PM2 ecosystem configuration
+sudo -u lukseh cat <<EOF >/opt/lukseh.dev/ecosystem.config.js
 module.exports = {
   apps: [
     {
       name: 'lukseh-backend',
       cwd: '/opt/lukseh.dev/backend',
       script: 'dotnet',
-      args: 'run --urls http://0.0.0.0:5188',
+      args: 'run --configuration Release --urls http://0.0.0.0:5188',
       env: {
         ASPNETCORE_ENVIRONMENT: 'Production',
         ASPNETCORE_URLS: 'http://0.0.0.0:5188'
       },
       restart_delay: 1000,
       max_restarts: 10,
-      min_uptime: '10s'
+      min_uptime: '10s',
+      instances: 1,
+      exec_mode: 'fork'
     },
     {
       name: 'lukseh-proxy',
@@ -241,78 +228,33 @@ module.exports = {
       },
       restart_delay: 1000,
       max_restarts: 10,
-      min_uptime: '10s'
+      min_uptime: '10s',
+      instances: 1,
+      exec_mode: 'fork'
     }
   ]
 };
 EOF
-msg_ok "Created PM2 Ecosystem"
 
-msg_info "Creating Service User"
-useradd -r -s /bin/false lukseh || true
-chown -R lukseh:lukseh /opt/lukseh.dev
-msg_ok "Created Service User"
-
-msg_info "Starting PM2 Services"
+# Start services with PM2 ecosystem
 cd /opt/lukseh.dev
 sudo -u lukseh pm2 start ecosystem.config.js
 sudo -u lukseh pm2 save
-
-# Create systemd service for PM2
-cat <<EOF >/etc/systemd/system/pm2-lukseh.service
-[Unit]
-Description=PM2 process manager for Lukseh.dev
-After=network.target
-
-[Service]
-Type=oneshot
-User=lukseh
-ExecStart=/usr/bin/pm2 resurrect
-ExecStop=/usr/bin/pm2 kill
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl enable pm2-lukseh
-systemctl start pm2-lukseh
 msg_ok "Started PM2 Services"
 
-msg_info "Configuring Nginx Service"
-systemctl enable nginx
-systemctl restart nginx
+msg_info "Setting up PM2 system service"
+# Setup PM2 to start on boot
+sudo -u lukseh bash -c 'pm2 startup systemd -u lukseh --hp /home/lukseh' | grep -E '^sudo ' | bash
+systemctl enable pm2-lukseh >/dev/null 2>&1
+systemctl start pm2-lukseh >/dev/null 2>&1
+msg_ok "Configured PM2 System Service"
+
+msg_info "Starting Nginx"
+systemctl enable nginx >/dev/null 2>&1
+systemctl restart nginx >/dev/null 2>&1
 msg_ok "Started Nginx"
 
-msg_info "Creating Production Configuration Template"
-cat <<EOF >/opt/lukseh.dev/backend/appsettings.Production.json
-{
-  "ApiSettings": {
-    "GitHubToken": "your_github_token_here",
-    "LinkedInAccessToken": "your_linkedin_access_token_here", 
-    "LinkedInClientSecret": "your_linkedin_client_secret_here",
-    "LinkedInProfileId": "lukseh74"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*",
-  "Kestrel": {
-    "Endpoints": {
-      "Http": {
-        "Url": "http://0.0.0.0:5188"
-      }
-    }
-  }
-}
-EOF
-chown lukseh:lukseh /opt/lukseh.dev/backend/appsettings.Production.json
-msg_ok "Created Configuration Template"
-
-msg_info "Installing Cloudflared (Optional)"
+msg_info "Installing Cloudflared"
 # Download and install cloudflared
 wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -O cloudflared.deb
 dpkg -i cloudflared.deb >/dev/null 2>&1
@@ -326,16 +268,15 @@ msg_ok "Cleaned up packages"
 
 msg_info "Installation completed successfully!"
 echo ""
+echo "🎉 Lukseh.dev Portfolio is now running!"
+echo ""
 echo "Next steps:"
 echo "1. Configure API keys in /opt/lukseh.dev/backend/appsettings.Production.json"
 echo "2. Set up Cloudflare tunnel: cloudflared tunnel login"
 echo "3. Create tunnel: cloudflared tunnel create lukseh-dev-tunnel"
 echo "4. Configure DNS in Cloudflare dashboard"
-
-motd_ssh
-customize
-
-msg_info "Cleaning up"
-$STD apt-get -y autoremove
-$STD apt-get -y autoclean
-msg_ok "Cleaned"
+echo ""
+echo "Services should be accessible at:"
+echo "- Frontend: http://$(hostname -I | awk '{print $1}')"
+echo "- Proxy API: http://$(hostname -I | awk '{print $1}'):3000"
+echo "- Backend API: http://$(hostname -I | awk '{print $1}'):5188"
