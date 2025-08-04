@@ -29,7 +29,7 @@ rm packages-microsoft-prod.deb
 
 # Install other dependencies
 echo "Installing dependencies..."
-apt-get install -y git nginx curl wget >/dev/null 2>&1
+apt-get install -y git nginx curl wget net-tools >/dev/null 2>&1
 
 # Install PM2
 echo "Installing PM2..."
