@@ -1,0 +1,223 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install Vue Frontend Dependencies",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend-vue"
+			},
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Install Node Proxy Dependencies",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/node-proxy"
+			},
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Install All Dependencies",
+			"dependsOrder": "parallel",
+			"dependsOn": [
+				"Install Vue Frontend Dependencies",
+				"Install Node Proxy Dependencies"
+			]
+		},
+		{
+			"label": "Build Vue Frontend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend-vue"
+			},
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Serve Vue Frontend (Dev)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend-vue"
+			},
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": true
+		},
+		{
+			"label": "Run Node Proxy",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"start"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/node-proxy"
+			},
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": true
+		},
+		{
+			"label": "Build Backend",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"backend/LuksehDev.Backend.csproj"
+			],
+			"group": "build",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Run Backend",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"backend/LuksehDev.Backend.csproj"
+			],
+			"group": "build",
+			"problemMatcher": "$msCompile",
+			"isBackground": true
+		},
+		{
+			"label": "Run Node Proxy (Delayed)",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"Start-Sleep -Seconds 5; cd node-proxy; npm start"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": true
+		},
+		{
+			"label": "Clean Vue Frontend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"clean"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend-vue"
+			},
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Clean Backend",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"backend/LuksehDev.Backend.csproj"
+			],
+			"group": "build",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Clean All",
+			"dependsOrder": "parallel",
+			"dependsOn": [
+				"Clean Vue Frontend",
+				"Clean Backend"
+			]
+		},
+		{
+			"label": "Build Vue Frontend (Production)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend-vue"
+			},
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Full Stack",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Run Backend",
+				"Run Node Proxy",
+				"Serve Vue Frontend (Dev)"
+			]
+		},
+		{
+			"label": "Clean Build and Start Full Stack",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Stop Running Processes",
+				"Clean All",
+				"Install All Dependencies",
+				"Build Backend",
+				"Run Backend",
+				"Run Node Proxy (Delayed)",
+				"Serve Vue Frontend (Dev)"
+			]
+		},
+		{
+			"label": "Stop Running Processes",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"try { Get-NetTCPConnection -LocalPort 3000,5173,5174,5188 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } } catch { Write-Host 'No processes found' }; Write-Host 'Process cleanup completed'"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Backend via dotnet run",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/backend"
+			},
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": "$msCompile",
+			"dependsOn": "Build Backend"
+		},
+		{
+			"label": "Clean and Build (Pre-Launch)",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Stop Running Processes",
+				"Clean All",
+				"Install All Dependencies",
+				"Build Backend"
+			]
+		}
+	]
+}

@@ -1,0 +1,71 @@
+# Frontend (Node.js/TypeScript)
+frontend/node_modules/
+frontend/dist/
+frontend/*.log
+frontend/.env*
+
+# Backend (.NET)
+backend/bin/
+backend/obj/
+backend/*.user
+backend/*.log
+backend/appsettings.Development.json
+
+# Build outputs
+**/dist/
+**/build/
+**/out/
+
+# Dependencies
+**/node_modules/
+**/packages/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Package files
+*.tgz
+*.tar.gz
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Old folders (can be removed after migration)
+.NET/
+Node.ts/
