@@ -7,7 +7,18 @@ This directory contains deployment files for the Lukseh.dev portfolio supporting
 
 ## 🚀 Quick Deployment
 
-### Option 1: Community Script (Recommended)
+### Option 1: Standalone Script (Recommended)
+Simple, reliable deployment script:
+
+```bash
+# In Proxmox VE shell - deploy to container 100
+bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev-standalone.sh) 100
+
+# Custom container ID and resources (ID, RAM_MB, CPU_CORES)
+bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev-standalone.sh) 101 2048 2
+```
+
+### Option 2: Community Script (Experimental)
 Use the Proxmox VE Helper Scripts pattern:
 
 ```bash
@@ -15,7 +26,7 @@ Use the Proxmox VE Helper Scripts pattern:
 bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev.sh)
 ```
 
-### Option 2: Manual Proxmox VE (PVE)
+### Option 3: Manual Proxmox VE (PVE)
 ```bash
 # Make deployment script executable
 chmod +x deploy/deploy-pve.sh deploy/manage-pve.sh
@@ -25,7 +36,7 @@ cd deploy
 ./deploy-pve.sh
 ```
 
-### Option 3: LXC/LXD
+### Option 4: LXC/LXD
 ```bash
 # Make deployment script executable
 chmod +x deploy/deploy-lxc.sh deploy/manage-lxc.sh
@@ -38,7 +49,8 @@ cd deploy
 ## 📁 Deployment Files
 
 ### Core Deployment
-- `lukseh-dev.sh` - **Community Script (Recommended)** - Proxmox VE Helper Scripts pattern
+- `lukseh-dev-standalone.sh` - **Standalone Script (Recommended)** - Simple, reliable deployment
+- `lukseh-dev.sh` - Community Script (Experimental) - Proxmox VE Helper Scripts pattern
 - `lukseh-dev-install.sh` - Installation function for community script
 - `COMMUNITY-SCRIPT.md` - Documentation for community script submission
 - `deploy-pve.sh` - Manual Proxmox VE deployment script
