@@ -18,13 +18,20 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy
 bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev-standalone.sh) 101 2048 2
 ```
 
-### Option 2: Community Script (Experimental)
-Use the Proxmox VE Helper Scripts pattern:
+### Option 2: Community-Style Script (Self-Hosted)
+Works like Proxmox VE Helper Scripts but hosted on your repository:
 
 ```bash
 # In Proxmox VE shell
 bash <(curl -fsSL https://raw.githubusercontent.com/Lukseh/luksehDev/main/deploy/lukseh-dev.sh)
 ```
+
+This script:
+- ✅ Uses community script UI patterns (whiptail menus)
+- ✅ Provides update/uninstall options via menu
+- ✅ Works without being published to community-scripts repository
+- ✅ Gracefully handles missing community functions
+- ✅ Self-contained and reliable
 
 ### Option 3: Manual Proxmox VE (PVE)
 ```bash
@@ -49,8 +56,8 @@ cd deploy
 ## 📁 Deployment Files
 
 ### Core Deployment
-- `lukseh-dev-standalone.sh` - **Standalone Script (Recommended)** - Simple, reliable deployment
-- `lukseh-dev.sh` - Community Script (Experimental) - Proxmox VE Helper Scripts pattern
+- `lukseh-dev-standalone.sh` - **Standalone Script (Simple & Fast)** - Direct deployment without UI
+- `lukseh-dev.sh` - **Community-Style Script (Recommended)** - UI menus, update/uninstall options
 - `lukseh-dev-install.sh` - Installation function for community script
 - `COMMUNITY-SCRIPT.md` - Documentation for community script submission
 - `deploy-pve.sh` - Manual Proxmox VE deployment script
