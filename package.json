@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Adam Komorowski's Portfolio Website",
   "scripts": {
-    "build": "cd frontend-vue && npm install && npm install @vitejs/plugin-vue@6.0.1 vite@7.0.6 && node node_modules/vite/bin/vite.js build",
+    "build": "cd frontend-vue && npm install && npm install @vitejs/plugin-vue@6.0.1 vite@7.0.6 && npm run build",
     "dev": "cd frontend-vue && npm run dev",
     "preview": "cd frontend-vue && npm run preview"
   },
