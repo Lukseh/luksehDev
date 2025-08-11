@@ -1,7 +1,9 @@
 import { fileURLToPath, URL } from 'node:url'
+import vue from '@vitejs/plugin-vue'
 
-// Minimal config without external plugins to avoid module resolution issues
+// Standard config - dependencies should be installed properly now
 export default {
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
