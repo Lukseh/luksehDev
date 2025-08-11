@@ -9,6 +9,10 @@ name = "lukseh-dev"
 [vars]
 ENVIRONMENT = "production"
 
+# Static assets from Vue build
+[site]
+bucket = "./frontend-vue/dist"
+
 # Routes to handle (uncomment when you have a custom domain)
 # routes = [
 #   { pattern = "lukseh.dev/*", zone_name = "lukseh.dev" }

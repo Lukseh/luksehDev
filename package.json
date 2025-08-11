@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "description": "Adam Komorowski's Portfolio Website",
   "scripts": {
-    "build": "echo 'Build completed - Worker will be deployed manually'",
-    "build:frontend": "cd frontend-vue && npm install && npx vite build",
-    "build:worker": "wrangler deploy",
-    "dev": "wrangler dev",
-    "dev:frontend": "cd frontend-vue && npm run dev",
+    "build": "cd frontend-vue && npm ci && npx vite build",
+    "deploy": "wrangler deploy",
+    "dev": "cd frontend-vue && npm run dev",
     "preview": "cd frontend-vue && npm run preview"
   },
   "repository": {
