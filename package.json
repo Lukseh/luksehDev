@@ -1,0 +1,16 @@
+{
+  "name": "lukseh-dev-portfolio",
+  "version": "1.0.0",
+  "description": "Adam Komorowski's Portfolio Website",
+  "scripts": {
+    "build": "cd frontend-vue && npm install && npm run build",
+    "dev": "cd frontend-vue && npm run dev",
+    "preview": "cd frontend-vue && npm run preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lukseh/luksehDev.git"
+  },
+  "author": "Adam Komorowski",
+  "license": "MIT"
+}
