@@ -1,0 +1,19 @@
+name = "lukseh-dev-portfolio"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "lukseh-dev-portfolio"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+
+# Static assets from Vue build
+[site]
+bucket = "./frontend-vue/dist"
+
+# Routes to handle (uncomment when you have a custom domain)
+# routes = [
+#   { pattern = "lukseh.dev/*", zone_name = "lukseh.dev" }
+# ]
