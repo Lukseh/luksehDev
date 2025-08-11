@@ -1,3 +1,5 @@
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
+
 // Simple Cloudflare Worker to serve Vue.js frontend and handle API routes
 export default {
   async fetch(request, env, ctx) {
@@ -9,16 +11,47 @@ export default {
       return handleApiRequest(request, path);
     }
 
-    // For non-API requests, serve from Pages deployment
-    // Replace 'your-pages-subdomain' with your actual Pages subdomain
-    const pagesUrl = new URL(request.url);
-    pagesUrl.hostname = 'lukseh-dev.pages.dev'; // Your Pages subdomain
-    
+    // Serve static files from Vue build
     try {
-      const response = await fetch(pagesUrl.toString());
-      return response;
-    } catch (error) {
-      return new Response('Service Unavailable', { status: 503 });
+      return await getAssetFromKV(
+        {
+          request,
+          waitUntil: ctx.waitUntil.bind(ctx),
+        },
+        {
+          ASSET_NAMESPACE: env.__STATIC_CONTENT,
+          ASSET_MANIFEST: env.__STATIC_CONTENT_MANIFEST,
+          // Serve index.html for SPA routes
+          mapRequestToAsset: (req) => {
+            const url = new URL(req.url);
+            if (url.pathname.startsWith('/api/')) {
+              return req;
+            }
+            // For SPA routing, serve index.html for non-asset requests
+            if (!url.pathname.includes('.') || url.pathname === '/') {
+              url.pathname = '/index.html';
+            }
+            return new Request(url.toString(), req);
+          },
+        }
+      );
+    } catch (e) {
+      // If asset not found, serve index.html for SPA routing
+      try {
+        const indexRequest = new Request(new URL('/index.html', request.url).toString(), request);
+        return await getAssetFromKV(
+          {
+            request: indexRequest,
+            waitUntil: ctx.waitUntil.bind(ctx),
+          },
+          {
+            ASSET_NAMESPACE: env.__STATIC_CONTENT,
+            ASSET_MANIFEST: env.__STATIC_CONTENT_MANIFEST,
+          }
+        );
+      } catch (indexError) {
+        return new Response('Not Found', { status: 404 });
+      }
     }
   }
 };
