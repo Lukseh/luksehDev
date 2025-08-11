@@ -49,17 +49,37 @@ async function handleBuildRequest(request, env, ctx) {
 }
 
 async function buildFromLatestRelease(env, ctx) {
-  // Get latest release from GitHub
-  const releaseResponse = await fetch('https://api.github.com/repos/Lukseh/luksehDev/releases/latest', {
-    headers: {
-      'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
-      'Accept': 'application/vnd.github.v3+json'
-    }
-  });
+  try {
+    // First try to get the repository info to make sure it exists
+    const repoResponse = await fetch('https://api.github.com/repos/Lukseh/luksehDev', {
+      headers: {
+        'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
 
-  if (!releaseResponse.ok) {
-    // If no releases, get latest commit from main branch
-    const commitResponse = await fetch('https://api.github.com/repos/Lukseh/luksehDev/commits/main', {
+    if (!repoResponse.ok) {
+      throw new Error(`Repository not found: ${repoResponse.status}`);
+    }
+
+    const repoData = await repoResponse.json();
+    const defaultBranch = repoData.default_branch || 'main';
+
+    // Try to get latest release first
+    const releaseResponse = await fetch('https://api.github.com/repos/Lukseh/luksehDev/releases/latest', {
+      headers: {
+        'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (releaseResponse.ok) {
+      const releaseData = await releaseResponse.json();
+      return await buildFromRelease(releaseData, env, ctx);
+    }
+
+    // If no releases, get latest commit from default branch
+    const commitResponse = await fetch(`https://api.github.com/repos/Lukseh/luksehDev/commits/${defaultBranch}`, {
       headers: {
         'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
         'Accept': 'application/vnd.github.v3+json'
@@ -67,15 +87,16 @@ async function buildFromLatestRelease(env, ctx) {
     });
     
     if (!commitResponse.ok) {
-      throw new Error('Failed to fetch latest commit');
+      const errorText = await commitResponse.text();
+      throw new Error(`Failed to fetch latest commit from ${defaultBranch}: ${commitResponse.status} - ${errorText}`);
     }
     
     const commitData = await commitResponse.json();
-    return await buildFromCommit(commitData.sha, env, ctx);
-  }
+    return await buildFromCommit(commitData.sha, defaultBranch, env, ctx);
 
-  const releaseData = await releaseResponse.json();
-  return await buildFromRelease(releaseData, env, ctx);
+  } catch (error) {
+    throw new Error(`GitHub API error: ${error.message}`);
+  }
 }
 
 async function buildFromRelease(releaseData, env, ctx) {
@@ -101,7 +122,7 @@ async function buildFromRelease(releaseData, env, ctx) {
   };
 }
 
-async function buildFromCommit(commitSha, env, ctx) {
+async function buildFromCommit(commitSha, branch, env, ctx) {
   // Download source from specific commit
   const archiveUrl = `https://api.github.com/repos/Lukseh/luksehDev/zipball/${commitSha}`;
   const sourceResponse = await fetch(archiveUrl, {
@@ -111,13 +132,15 @@ async function buildFromCommit(commitSha, env, ctx) {
   });
 
   if (!sourceResponse.ok) {
-    throw new Error('Failed to download commit source');
+    throw new Error(`Failed to download commit source: ${sourceResponse.status}`);
   }
 
   return {
     commit: commitSha,
+    branch: branch,
     buildTime: new Date().toISOString(),
-    status: 'Built from latest commit'
+    status: `Built from latest commit on ${branch} branch`,
+    size: sourceResponse.headers.get('content-length') || 'unknown'
   };
 }
 
