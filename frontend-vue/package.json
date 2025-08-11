@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "ls -la node_modules/.bin/ && npx --yes vite@7.0.6 build",
+    "build": "vite build",
     "preview": "vite preview",
     "clean": "rimraf dist node_modules/.vite"
   },
