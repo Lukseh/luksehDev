@@ -7,9 +7,9 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "node_modules/.bin/vite",
-    "build": "node_modules/.bin/vite build",
-    "preview": "node_modules/.bin/vite preview",
+    "dev": "vite",
+    "build": "ls -la node_modules/.bin/ && npx --yes vite@7.0.6 build",
+    "preview": "vite preview",
     "clean": "rimraf dist node_modules/.vite"
   },
   "dependencies": {
