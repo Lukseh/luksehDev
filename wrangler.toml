@@ -9,9 +9,11 @@ name = "lukseh-dev-portfolio"
 [vars]
 ENVIRONMENT = "production"
 
-# Static assets from Vue build
-[site]
-bucket = "./frontend-vue/dist"
+# KV namespaces for caching builds
+[[kv_namespaces]]
+binding = "BUILD_CACHE"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
 
 # Routes to handle (uncomment when you have a custom domain)
 # routes = [

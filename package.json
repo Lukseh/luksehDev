@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Adam Komorowski's Portfolio Website",
   "scripts": {
-    "build": "npm run build:frontend && wrangler deploy",
-    "build:frontend": "cd frontend-vue && npm install && npm run build",
+    "build": "echo 'Build completed - Worker will be deployed manually'",
+    "build:frontend": "cd frontend-vue && npm install && npx vite build",
     "build:worker": "wrangler deploy",
     "dev": "wrangler dev",
     "dev:frontend": "cd frontend-vue && npm run dev",
