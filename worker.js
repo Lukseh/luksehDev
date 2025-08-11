@@ -51,22 +51,34 @@ async function handleBuildRequest(request, env, ctx) {
 async function buildFromLatestRelease(env, ctx) {
   try {
     // First try to get the repository info to make sure it exists
-    const repoResponse = await fetch('https://api.github.com/repos/Lukseh/luksehDev', {
-      headers: {
-        'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
-        'Accept': 'application/vnd.github.v3+json'
+    // Try different possible repository names
+    const possibleRepos = ['luksehDev', 'Lukseh.dev', 'lukseh-dev', 'LuksehDev'];
+    let repoResponse;
+    let correctRepoName;
+    
+    for (const repoName of possibleRepos) {
+      repoResponse = await fetch(`https://api.github.com/repos/Lukseh/${repoName}`, {
+        headers: {
+          'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      
+      if (repoResponse.ok) {
+        correctRepoName = repoName;
+        break;
       }
-    });
+    }
 
     if (!repoResponse.ok) {
-      throw new Error(`Repository not found: ${repoResponse.status}`);
+      throw new Error(`Repository not found. Tried: ${possibleRepos.join(', ')}`);
     }
 
     const repoData = await repoResponse.json();
     const defaultBranch = repoData.default_branch || 'main';
 
     // Try to get latest release first
-    const releaseResponse = await fetch('https://api.github.com/repos/Lukseh/luksehDev/releases/latest', {
+    const releaseResponse = await fetch(`https://api.github.com/repos/Lukseh/${correctRepoName}/releases/latest`, {
       headers: {
         'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
         'Accept': 'application/vnd.github.v3+json'
@@ -75,11 +87,11 @@ async function buildFromLatestRelease(env, ctx) {
 
     if (releaseResponse.ok) {
       const releaseData = await releaseResponse.json();
-      return await buildFromRelease(releaseData, env, ctx);
+      return await buildFromRelease(releaseData, correctRepoName, env, ctx);
     }
 
     // If no releases, get latest commit from default branch
-    const commitResponse = await fetch(`https://api.github.com/repos/Lukseh/luksehDev/commits/${defaultBranch}`, {
+    const commitResponse = await fetch(`https://api.github.com/repos/Lukseh/${correctRepoName}/commits/${defaultBranch}`, {
       headers: {
         'User-Agent': 'Lukseh-Portfolio-Worker/1.0',
         'Accept': 'application/vnd.github.v3+json'
@@ -92,14 +104,14 @@ async function buildFromLatestRelease(env, ctx) {
     }
     
     const commitData = await commitResponse.json();
-    return await buildFromCommit(commitData.sha, defaultBranch, env, ctx);
+    return await buildFromCommit(commitData.sha, defaultBranch, correctRepoName, env, ctx);
 
   } catch (error) {
     throw new Error(`GitHub API error: ${error.message}`);
   }
 }
 
-async function buildFromRelease(releaseData, env, ctx) {
+async function buildFromRelease(releaseData, repoName, env, ctx) {
   // Download source code from release
   const tarballUrl = releaseData.tarball_url;
   const sourceResponse = await fetch(tarballUrl, {
@@ -115,6 +127,7 @@ async function buildFromRelease(releaseData, env, ctx) {
   // For now, we'll simulate the build process
   // In a real implementation, you'd need to extract the tarball and run the build
   return {
+    repository: repoName,
     version: releaseData.tag_name,
     commit: releaseData.target_commitish,
     buildTime: new Date().toISOString(),
@@ -122,9 +135,9 @@ async function buildFromRelease(releaseData, env, ctx) {
   };
 }
 
-async function buildFromCommit(commitSha, branch, env, ctx) {
+async function buildFromCommit(commitSha, branch, repoName, env, ctx) {
   // Download source from specific commit
-  const archiveUrl = `https://api.github.com/repos/Lukseh/luksehDev/zipball/${commitSha}`;
+  const archiveUrl = `https://api.github.com/repos/Lukseh/${repoName}/zipball/${commitSha}`;
   const sourceResponse = await fetch(archiveUrl, {
     headers: {
       'User-Agent': 'Lukseh-Portfolio-Worker/1.0'
@@ -136,6 +149,7 @@ async function buildFromCommit(commitSha, branch, env, ctx) {
   }
 
   return {
+    repository: repoName,
     commit: commitSha,
     branch: branch,
     buildTime: new Date().toISOString(),
@@ -227,7 +241,9 @@ async function generateIndexHtml(env) {
           if (result.success) {
             statusText.innerHTML = \`
               ✅ Build completed successfully!<br>
-              <small>Version: \${result.version || result.commit}<br>
+              <small>Repository: \${result.repository}<br>
+              Version: \${result.version || result.commit}<br>
+              Branch: \${result.branch || 'N/A'}<br>
               Built at: \${new Date(result.buildTime).toLocaleString()}</small>
             \`;
           } else {
