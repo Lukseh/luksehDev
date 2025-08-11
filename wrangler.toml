@@ -1,19 +1,13 @@
-name = "lukseh-dev-portfolio"
+name = "lukseh-dev"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
 [env.production]
-name = "lukseh-dev-portfolio"
+name = "lukseh-dev"
 
 # Environment variables
 [vars]
 ENVIRONMENT = "production"
-
-# KV namespaces for caching builds
-[[kv_namespaces]]
-binding = "BUILD_CACHE"
-id = "your-kv-namespace-id"
-preview_id = "your-preview-kv-namespace-id"
 
 # Routes to handle (uncomment when you have a custom domain)
 # routes = [
