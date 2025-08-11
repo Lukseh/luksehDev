@@ -136,9 +136,9 @@
             <v-col 
               cols="12" 
               sm="6" 
-              md="4" 
-              lg="3" 
-              xl="2"
+              md="6" 
+              lg="4" 
+              xl="4"
               v-for="repo in repos" 
               :key="repo.id"
             >
@@ -148,9 +148,10 @@
                 class="h-100 repo-embed-card"
                 :class="{ 'archived-repo': repo.archived }"
                 variant="outlined"
+                style="min-height: 280px;"
               >
                 <!-- Repository Header -->
-                <v-card-title class="pa-3 pb-2">
+                <v-card-title class="pa-4 pb-2">
                   <div class="d-flex align-start justify-space-between w-100">
                     <div class="flex-grow-1">
                       <div class="d-flex align-center mb-1">
@@ -215,17 +216,17 @@
                 </v-card-title>
 
                 <!-- Repository Description -->
-                <v-card-text class="pa-3 pt-1">
+                <v-card-text class="pa-4 pt-2">
                   <p 
-                    class="text-body-2 text-medium-emphasis github-description" 
-                    style="min-height: 48px; line-height: 1.4;"
+                    class="text-body-1 text-medium-emphasis github-description" 
+                    style="min-height: 60px; line-height: 1.5;"
                   >
                     {{ repo.description || 'No description available' }}
                   </p>
                 </v-card-text>
 
                 <!-- Repository Stats Footer -->
-                <v-card-actions class="pa-3 pt-0">
+                <v-card-actions class="pa-4 pt-0">
                   <div class="d-flex align-center justify-space-between w-100">
                     <div class="d-flex align-center">
                       <!-- Stars -->
@@ -259,7 +260,7 @@
 
                 <!-- GitHub Actions -->
                 <v-divider></v-divider>
-                <v-card-actions class="pa-2">
+                <v-card-actions class="pa-3">
                   <v-btn
                     variant="text"
                     size="small"
@@ -316,7 +317,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import apiService from '../services/api.js'
 
 export default {
   name: 'GitHub',
@@ -341,10 +342,10 @@ export default {
         loading.value = true
         error.value = null
         
-        const response = await axios.get('/api/social/lukseh')
+        const response = await apiService.getSocialData('lukseh')
         
-        if (response.data?.success && response.data?.data?.gitHub?.repos) {
-          repos.value = response.data.data.gitHub.repos
+        if (response?.GitHub?.Repos) {
+          repos.value = response.GitHub.Repos
           
           // Debug logging
           console.log('Total repos loaded:', repos.value.length)
@@ -353,11 +354,11 @@ export default {
           console.log('JavaScript repos:', repos.value.filter(r => r.language === 'JavaScript').map(r => r.name))
           
         } else {
-          throw new Error(response.data?.error || 'Invalid response format')
+          throw new Error(response?.GitHub?.Error || 'Invalid response format')
         }
       } catch (err) {
         console.error('Failed to load GitHub data:', err)
-        error.value = err.response?.data?.error || 'Failed to load GitHub repositories. Please try again later.'
+        error.value = err.message || 'Failed to load GitHub repositories. Please try again later.'
       } finally {
         loading.value = false
       }

@@ -1,144 +1,275 @@
-# Lukseh.dev Portfolio
-A modern full-stack portfolio website showcasing GitHub repositories and LinkedIn profile integration, built with Vue.js + Vuetify frontend, Node.js proxy server, and .NET Web API backend.
+# 🚀 Lukseh.dev Portfolio
+
+A modern developer portfolio built with Vue.js, showcasing GitHub repositories and a professional CV, deployable to Cloudflare Workers.
+
 ## 🏗️ Architecture
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Vue.js SPA    │───▶│  Node.js Proxy  │───▶│  .NET Web API   │
-│  (Port 5174)    │    │   (Port 3000)   │    │   (Port 5188)   │
+│   Vue.js SPA    │───▶│ Cloudflare      │───▶│  GitHub API     │
+│  (Frontend)     │    │ Worker (API)    │    │  (External)     │
 │                 │    │                 │    │                 │
-│ • Vuetify UI    │    │ • CORS Handler  │    │ • GitHub API    │
-│ • Vue Router    │    │ • Request Proxy │    │ • LinkedIn API  │
-│ • Material      │    │ • Error Handler │    │ • Data Service  │
+│ • Vuetify UI    │    │ • GitHub API    │    │ • Repository    │
+│ • Vue Router    │    │ • CORS Handler  │    │   Data          │
+│ • Static CV     │    │ • Error Handler │    │ • User Info     │
+│ • Material      │    │ • Rate Limiting │    │                 │
 │   Design        │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
-This project evolved from a simple Express server to a modern three-tier architecture:
-### 🎨 Frontend (`/frontend-vue`)
+
+This project has evolved to a modern serverless architecture using Cloudflare Workers and Pages for global deployment.
+
+## ✨ Features
+
+### 🎨 Frontend (Vue.js + Vuetify)
 - **Vue.js 3.5.18** with Composition API and **Vuetify 3.9.3**
 - **Vue Router 4.5.1** for multi-page navigation
 - **Material Design** components with dark theme
-- **Responsive** mobile-first design with full-width layouts
-- **Advanced GitHub repository filtering, sorting, and grouping**
+- **Responsive** mobile-first design
+- **GitHub repository** filtering, sorting, and display
+- **Static CV** page with professional information
 - **Vite 7.0.6** development server with Hot Module Replacement
-### 🔄 Proxy Layer (`/node-proxy`)
-- **Express.js** proxy server for CORS handling
-- Bridges Vue frontend with .NET backend
-- **Error translation** and request forwarding
-- Health monitoring and service status
-- **ES Modules** with modern JavaScript
-### ⚡ Backend (`/backend`)
-- **.NET 9.0 Web API** for fast data processing
-- **GitHub API** integration with 50+ repositories support
-- **LinkedIn API** integration for professional profile
-- **Combined social endpoint** for unified data access
-- **Archive status detection** and proper repository metadata
-## 🚀 Quick Start
-### **Option 1: VS Code Launch (Recommended)**
-1. Open VS Code in the workspace root
-2. Press `F5` and select **"Launch Full Stack"**
-3. All services start automatically:
-   - Vue Frontend: http://localhost:5174
-   - Node Proxy: http://localhost:3000
-   - Backend API: http://localhost:5188
-### **Option 2: Manual Setup**
-1. **Install Dependencies**
-   ```bash
-   # Frontend
-   cd frontend-vue
-   npm install
-   # Proxy
-   cd ../node-proxy
-   npm install
-   ```
-2. **Configure API Keys**
-   Create `backend/appsettings.Development.json`:
-   ```json
-   {
-     "ApiSettings": {
-       "GitHubToken": "your_github_token_here",
-       "LinkedInAccessToken": "your_linkedin_access_token_here",
-       "LinkedInClientSecret": "your_linkedin_client_secret_here",
-       "LinkedInProfileId": "lukseh74"
-     }
-   }
-   ```
-3. **Start Services**
-   ```bash
-   # Terminal 1: Backend
-   cd backend
-   dotnet run
-   # Terminal 2: Proxy
-   cd node-proxy
-   npm start
-   # Terminal 3: Frontend
-   cd frontend-vue
-   npm run dev
-   ```
-## 🛠️ VS Code Integration
-### **Available Tasks** (`Ctrl+Shift+P` → Tasks: Run Task)
-- **Launch Full Stack** - Start all services
-- **Clean Build and Start Full Stack** - Complete rebuild and launch
-- **Stop Running Processes** - Clean shutdown of all services
-- **Build Backend** - Compile .NET project
-- **Install All Dependencies** - npm install for all projects
-### **Launch Configurations** (F5)
-- **Launch Full Stack** - Start all services
-- **Launch Full Stack (Clean Build)** - Clean build + start
-- **Launch Vue Frontend** - Frontend only
-- **Launch Node Proxy** - Proxy server only
-- **Launch Backend API** - Backend with debugging
+
+### ⚡ Backend (Cloudflare Worker)
+- **Serverless API** running on Cloudflare's edge network
+- **GitHub API** integration for repository data
+- **CORS handling** for cross-origin requests
+- **Error management** and response formatting
+- **Global deployment** with 300+ edge locations
+
+### 🌟 Key Improvements
+- **Removed LinkedIn dependency** - simplified to GitHub-only integration
+- **Added static CV section** - professional experience and skills
+- **Cloudflare Workers deployment** - serverless and globally distributed
+- **No backend server required** - completely serverless architecture
+
+## 🚀 Quick Start (Cloudflare Deployment)
+
+### Prerequisites
+- Node.js (version 16+)
+- Cloudflare account (free tier sufficient)
+
+### 1. Setup Environment
+```bash
+cd deploy
+./setup-cloudflare.sh    # Linux/Mac
+# or
+.\setup-cloudflare.ps1   # Windows PowerShell
+```
+
+### 2. Authenticate with Cloudflare
+```bash
+wrangler login
+```
+
+### 3. Deploy to Cloudflare
+```bash
+./deploy-cloudflare.sh    # Linux/Mac
+# or
+.\deploy-cloudflare.ps1   # Windows PowerShell
+```
+
+Your site will be available at:
+- **Frontend**: `https://lukseh-dev.pages.dev`
+- **API**: `https://lukseh-dev-api.your-subdomain.workers.dev`
+
+## 🛠️ Local Development
+
+### Prerequisites
+- Node.js 16+
+- npm or yarn
+
+### Frontend Development
+```bash
+cd frontend-vue
+npm install
+npm run dev
+```
+
+### API Testing (Local)
+```bash
+cd node-proxy
+npm install
+npm start
+```
+
+### Backend Development (.NET - Optional)
+```bash
+cd backend
+dotnet run
+```
+
 ## 📁 Project Structure
+
 ```
 lukseh.dev/
 ├── frontend-vue/           # Vue.js + Vuetify frontend
 │   ├── src/
-│   │   ├── views/         # Page components (Home, GitHub, LinkedIn)
+│   │   ├── views/         # Page components (Home, GitHub, CV)
+│   │   ├── services/      # API service layer
 │   │   ├── router/        # Vue Router configuration
 │   │   └── assets/        # Styles and static assets
-│   ├── package.json
-│   └── vite.config.js
-├── node-proxy/            # Express.js proxy server
-│   ├── server.js          # Main proxy server (ES modules)
+│   ├── .env.production    # Production environment config
 │   └── package.json
-├── backend/               # .NET 9.0 Web API
-│   ├── Program.cs         # Main API endpoints
-│   ├── appsettings.json
-├── .vscode/               # VS Code configuration
-│   ├── launch.json        # Debug configurations
-│   └── tasks.json         # Build and run tasks
-├── Node.ts/               # Legacy Node.js (deprecated)
-├── LAUNCH-GUIDE.md        # Detailed launch instructions
-└── README.md
+├── deploy/                # Cloudflare Workers deployment
+│   ├── cloudflare-worker.js      # Worker API code
+│   ├── wrangler.toml             # Worker configuration
+│   ├── deploy-cloudflare.sh      # Deployment script (Linux/Mac)
+│   ├── deploy-cloudflare.ps1     # Deployment script (Windows)
+│   └── CLOUDFLARE-README.md      # Detailed deployment guide
+├── node-proxy/            # Express.js proxy (local dev)
+├── backend/               # .NET Web API (local dev)
+└── .vscode/               # VS Code configuration
 ```
-## ✨ Features
-### 🔍 **GitHub Integration**
-- ✅ **50+ Repository Display** with full metadata
-- ✅ **Advanced Filtering** by language, search, and archive status
-- ✅ **Smart Sorting** by stars, name, created/updated date
-- ✅ **Language Grouping** with authentic GitHub colors
-- ✅ **GitHub-Style Embeds** with repository stats and actions
-- ✅ **Archive Detection** with proper filtering
-- ✅ **Responsive Grid** (1-6 repos per row based on screen size)
-### 🔗 **LinkedIn Integration**
-- ✅ **Professional Profile Display**
-- ✅ **OAuth 2.0 Authentication** setup
-- ✅ **Profile Data Integration**
-### 🎨 **UI/UX Features**
-- ✅ **Multi-Page Navigation** (Home, GitHub, LinkedIn)
-- ✅ **Full-Width Layouts** utilizing entire screen real estate
-- ✅ **Dark Theme** with modern Material Design
-- ✅ **Smooth Animations** and hover effects
-- ✅ **Mobile-First Responsive Design**
-## 🌐 URLs
-- **Frontend**: http://localhost:5174
-- **Proxy API**: http://localhost:3000
-- **Backend API**: http://localhost:5188
-- **API Health**: http://localhost:3000/health
-## 🎯 Technology Stack
-- **Frontend**: Vue.js 3.5.18, Vuetify 3.9.3, Vue Router 4.5.1, Vite 7.0.6
-- **Proxy**: Node.js, Express.js, Axios, ES Modules
-- **Backend**: .NET 9.0, ASP.NET Core Web API, HttpClient
-- **Development**: VS Code, TypeScript, Hot Module Replacement
-- **APIs**: GitHub REST API, LinkedIn API v2
+
+## 🌐 Deployment Options
+
+### 🔥 Cloudflare Workers (Recommended)
+- **Global edge deployment**
+- **Automatic scaling**
+- **Built-in DDoS protection**
+- **Free tier available**
+- See `deploy/CLOUDFLARE-README.md` for detailed guide
+
+### 🐳 Traditional Hosting
+- Docker containers available in `/deploy`
+- Supports local development with .NET backend
+- Node.js proxy for CORS handling
+
+## 🎯 Customization Guide
+
+### 1. Update Personal Information
+
+#### CV Page (`frontend-vue/src/views/CV.vue`)
+- Replace placeholder text with your information
+- Update work experience, education, and skills
+- Customize technologies and certifications
+
+#### GitHub Username
+Update the username in:
+- `frontend-vue/src/views/GitHub.vue` (line with `getSocialData('lukseh')`)
+- `deploy/cloudflare-worker.js` if needed
+
+### 2. Customize Styling
+- Colors and theme: `frontend-vue/src/main.js`
+- Component styles: Individual `.vue` files
+- Global styles: `frontend-vue/src/assets/`
+
+### 3. Add Features
+- **Analytics**: Add Google Analytics or Cloudflare Analytics
+- **Contact Form**: Use Cloudflare Workers or third-party service
+- **Blog**: Add a blog section with markdown support
+- **Projects**: Expand beyond GitHub repositories
+
+## 🔧 Environment Configuration
+
+### Development (.env.development)
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+### Production (.env.production)
+```env
+VITE_API_BASE_URL=https://lukseh-dev-api.your-subdomain.workers.dev
+```
+
+## 📊 Performance & Analytics
+
+### Built-in Features
+- **Cloudflare Analytics**: Automatic visitor tracking
+- **Core Web Vitals**: Performance monitoring
+- **CDN Caching**: Global asset distribution
+- **Image Optimization**: Automatic image processing
+
+### Performance Optimizations
+- **Bundle splitting**: Optimized JavaScript chunks
+- **Asset minification**: CSS and JS compression
+- **Tree shaking**: Unused code elimination
+- **Lazy loading**: Route-based code splitting
+
+## 🔒 Security
+
+### Cloudflare Security Features
+- **DDoS Protection**: Built-in attack mitigation
+- **SSL/TLS**: Automatic HTTPS certificates
+- **WAF**: Web Application Firewall
+- **Bot Management**: Automatic bot detection
+
+### API Security
+- **CORS**: Proper cross-origin handling
+- **Rate Limiting**: Prevent API abuse
+- **Input Validation**: Secure request processing
+
+## 🧪 Testing
+
+### Frontend Testing
+```bash
+cd frontend-vue
+npm run test        # Unit tests
+npm run test:e2e    # End-to-end tests
+```
+
+### API Testing
+```bash
+# Test worker locally
+cd deploy/cloudflare-worker
+wrangler dev
+
+# Test endpoints
+curl http://localhost:8787/health
+curl http://localhost:8787/api/social/lukseh
+```
+
+## 📈 Monitoring & Logging
+
+### Cloudflare Dashboard
+- **Real-time analytics**
+- **Error tracking**
+- **Performance metrics**
+- **Security events**
+
+### Worker Logs
+```bash
+# Stream real-time logs
+wrangler tail lukseh-dev-api
+
+# View logs in dashboard
+# Go to Cloudflare Dashboard > Workers & Pages > lukseh-dev-api > Logs
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### Documentation
+- [Vue.js Documentation](https://vuejs.org/)
+- [Vuetify Documentation](https://vuetifyjs.com/)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
+
+### Issues
+- Check existing issues in the GitHub repository
+- Create new issues with detailed descriptions
+- Use the issue templates when available
+
+## 🎉 Acknowledgments
+
+- **Vue.js Team** for the amazing framework
+- **Vuetify Team** for the Material Design components
+- **Cloudflare** for the edge computing platform
+- **GitHub** for the API and hosting
+
 ---
-Built with ❤️ for modern full-stack development
+
+**Built with ❤️ by Lukseh**
+
+*Ready to deploy your portfolio to the edge? Get started with Cloudflare Workers today!* 🚀

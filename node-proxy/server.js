@@ -26,8 +26,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       social: '/api/social/:username',
-      github: '/api/github/repos/:username',
-      linkedin: '/api/linkedin/profile/:profileId'
+      github: '/api/github/repos/:username'
     },
     status: 'running'
   });
@@ -111,26 +110,6 @@ app.get('/api/github/repos/:username', async (req, res) => {
   }
 });
 
-// LinkedIn proxy endpoint
-app.get('/api/linkedin/profile/:profileId', async (req, res) => {
-  try {
-    const { profileId } = req.params;
-    const response = await axios.get(`${BACKEND_URL}/api/linkedin/profile/${profileId}`);
-    
-    res.json({
-      success: true,
-      data: response.data
-    });
-  } catch (error) {
-    console.error('LinkedIn proxy error:', error.message);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch LinkedIn data',
-      details: error.message
-    });
-  }
-});
-
 // Catch-all for API routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({
@@ -139,7 +118,6 @@ app.use('/api/*', (req, res) => {
     availableEndpoints: [
       'GET /api/social/:username',
       'GET /api/github/repos/:username',
-      'GET /api/linkedin/profile/:profileId',
       'GET /health'
     ]
   });

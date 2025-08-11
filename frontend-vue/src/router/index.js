@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import GitHub from '../views/GitHub.vue'
-import LinkedIn from '../views/LinkedIn.vue'
+import CV from '../views/CV.vue'
 
 const routes = [
   {
@@ -21,11 +21,11 @@ const routes = [
     }
   },
   {
-    path: '/linkedin',
-    name: 'LinkedIn',
-    component: LinkedIn,
+    path: '/cv',
+    name: 'CV',
+    component: CV,
     meta: {
-      title: 'LinkedIn Profile - lukseh.dev'
+      title: 'Curriculum Vitae - lukseh.dev'
     }
   }
 ]

@@ -1,0 +1,6 @@
+# Force HTTPS and handle SPA routing
+http://lukseh-dev.pages.dev/* https://lukseh-dev.pages.dev/:splat 301!
+http://104cfb28.lukseh-dev.pages.dev/* https://lukseh-dev.pages.dev/:splat 301!
+
+# SPA fallback
+/* /index.html 200

@@ -36,11 +36,11 @@
       </v-btn>
       <v-btn
         variant="text"
-        to="/linkedin"
-        prepend-icon="mdi-linkedin"
+        to="/cv"
+        prepend-icon="mdi-file-document"
         class="text-h6 mx-2"
       >
-        LinkedIn
+        CV
       </v-btn>
 
       <template v-slot:append>
@@ -48,12 +48,6 @@
           icon="mdi-github"
           variant="text"
           href="https://github.com/lukseh"
-          target="_blank"
-        ></v-btn>
-        <v-btn
-          icon="mdi-linkedin"
-          variant="text"
-          href="https://linkedin.com/in/lukseh74"
           target="_blank"
         ></v-btn>
       </template>

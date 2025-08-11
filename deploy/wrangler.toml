@@ -1,0 +1,32 @@
+name = "lukseh-dev-api"
+main = "cloudflare-worker.js"
+compatibility_date = "2023-12-07"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# Custom domain configuration (optional)
+# routes = [
+#   { pattern = "lukseh.dev/api/*", zone_name = "lukseh.dev" },
+#   { pattern = "api.lukseh.dev/*", zone_name = "lukseh.dev" }
+# ]
+
+# Environment variables (set these in Cloudflare dashboard)
+# [env.production.vars]
+# GITHUB_TOKEN = "your_github_token_here"
+
+# KV namespaces (optional, for caching)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your_kv_namespace_id"
+# preview_id = "your_preview_kv_namespace_id"
+
+# Durable Objects (optional, for advanced state management)
+# [[durable_objects.bindings]]
+# name = "STATS_COUNTER"
+# class_name = "StatsCounter"
+
+# Analytics Engine (optional, for usage analytics)
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"

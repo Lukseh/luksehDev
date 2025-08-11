@@ -7,7 +7,7 @@
           Developer Portfolio
         </h1>
         <p class="text-h6 mb-6 text-medium-emphasis">
-          Welcome to my developer portfolio showcasing GitHub repositories and LinkedIn professional profile
+          Welcome to my developer portfolio showcasing GitHub repositories and professional CV
         </p>
         <v-row justify="center" class="mt-8">
           <v-col cols="auto">
@@ -27,11 +27,11 @@
               color="info"
               size="x-large"
               variant="elevated"
-              to="/linkedin"
-              prepend-icon="mdi-linkedin"
+              to="/cv"
+              prepend-icon="mdi-file-document"
               class="text-h6 px-8 py-4 ma-2"
             >
-              View LinkedIn Profile
+              View My CV
             </v-btn>
           </v-col>
         </v-row>
@@ -56,13 +56,13 @@
           </v-col>
           <v-col cols="12" md="6">
             <v-card elevation="4" class="h-100 text-center pa-6">
-              <v-icon icon="mdi-linkedin" size="64" color="info" class="mb-4"></v-icon>
-              <h3 class="text-h5 font-weight-bold mb-3">Professional Profile</h3>
+              <v-icon icon="mdi-file-document" size="64" color="info" class="mb-4"></v-icon>
+              <h3 class="text-h5 font-weight-bold mb-3">Curriculum Vitae</h3>
               <p class="text-body-1 text-medium-emphasis mb-4">
-                Learn about my professional experience, skills, and career journey
+                View my professional experience, education, and skills in a traditional CV format
               </p>
-              <v-btn variant="outlined" color="info" to="/linkedin">
-                View Profile
+              <v-btn variant="outlined" color="info" to="/cv">
+                View CV
               </v-btn>
             </v-card>
           </v-col>
