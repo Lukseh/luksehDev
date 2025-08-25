@@ -52,6 +52,7 @@ const app = new Elysia()
               language: Type.String(),
               license: Type.Union([Type.String(), Type.Boolean()]),
               archived: Type.Boolean(),
+              description: Type.Union([Type.String(), Type.Boolean()]),
             })
           ),
         },
