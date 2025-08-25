@@ -13,13 +13,14 @@ async function getGithubData() {
   const data: any[] = await githubData.json();
   const parsedData = data
     .filter((repo: { name: string }) => repo.name !== "Lukseh")
-    .map((repo: { name: string, html_url: string, homepage?: string, language: string | null, license?: { spdx_id?: string | null }, archived: boolean }) => ({
+    .map((repo: { name: string, html_url: string, description?: string, homepage?: string, language: string | null, license?: { spdx_id?: string | null }, archived: boolean }) => ({
       name: repo.name,
       url: repo.html_url,
       homepage: repo.homepage && repo.homepage !== '' ? repo.homepage : false,
       language: typeof repo.language === 'string' && repo.language !== '' ? repo.language : 'Unknown',
       license: repo.license && typeof repo.license.spdx_id === 'string' && repo.license.spdx_id !== '' ? repo.license.spdx_id : false,
-      archived: repo.archived
+      archived: repo.archived,
+      description: repo.description && typeof repo.description === 'string' && repo.description !== '' ? repo.description: false,
     }));
   return parsedData;
 }
