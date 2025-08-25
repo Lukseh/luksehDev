@@ -12,6 +12,8 @@
     --main-font: 'Microsoft YaHei UI', 'Roboto', 'Arial', sans-serif;
     --secondary-font: 'Montserrat', 'Roboto', 'Arial', sans-serif;
 
+    --font-size: 1rem;
+
     --input-bg: var(--main-color);
     --input-border: transparent;
     --input-text: var(--font-color);
@@ -19,6 +21,7 @@
 }
 * {
     font-family: var(--main-font);
+    font-size: var(--font-size);
 }
 .ant-menu-item-selected {
     background-color: var(--third-color) !important;

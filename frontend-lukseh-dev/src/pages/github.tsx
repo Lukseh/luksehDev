@@ -23,7 +23,7 @@ function createRepoCards(data: Repo[], search: string, sort: string, showArchive
                 <Col key={repo.name + idx} span={8}>
                     <div className={repo.archived ? "archived-repo" : "active-repo"} style={{ border: '1px solid #eee', padding: 16, borderRadius: 8 }}>
                         <h3>{repo.name}</h3>
-                        <p>{repo.description}</p>
+                        <p style={{ minHeight: 'var(--font-size)' }}>{repo.description ? repo.description : "\u00A0"}</p>
                         {repo.homepage && typeof repo.homepage === 'string' && repo.homepage !== '' && (
                             <p>Homepage: <a href={repo.homepage} target="_blank" rel="noopener noreferrer">{repo.homepage}</a></p>
                         )}
