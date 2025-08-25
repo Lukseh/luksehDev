@@ -46,7 +46,7 @@ const GitHubEmbed: React.FC = () => {
 
     useEffect(() => {
         async function fetchData() {
-            const API_ADDRESS = import.meta.env.VITE_API_ADDRESS || "/api/github";
+            const API_ADDRESS = (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + "/api/github" : "/api/github");
             const response = await fetch(API_ADDRESS);
             const json = await response.json();
             setData(json);
