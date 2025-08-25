@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+:root {
+    /* Variables */
+    --main-color: #000000;
+    --alt-color: #222;
+    --third-color: #252525;
+    --font-color: #ffffff;
+    --purple: #6f00ff;
+    --alt-purple: #0c0090;
+    --active-repo-color: var(--alt-color);
+
+    --main-font: 'Microsoft YaHei UI', 'Roboto', 'Arial', sans-serif;
+    --secondary-font: 'Montserrat', 'Roboto', 'Arial', sans-serif;
+
+    --input-bg: var(--main-color);
+    --input-border: transparent;
+    --input-text: var(--font-color);
+    --input-placeholder: var(--font-color);
+}
+* {
+    font-family: var(--main-font);
+}
+.ant-menu-item-selected {
+    background-color: var(--third-color) !important;
+}
+#root, .ant-layout {
+    padding:0;
+    margin:0;
+    width: 100%;
+    height: 100vh;
+    position:fixed;
+    top:0px;
+    left:0px;
+    z-index:1000;
+}
+main {
+    height: 100%;
+    width: 100%;
+    padding: 1.2vw;
+    background-color: var(--main-color);
+    color: var(--font-color);
+}
+.ant-menu {
+    height: 75% !important;
+    width: 100% !important;
+}
+.pageTitle {
+    color: var(--purple);
+    text-shadow: 0.2rem 0.2rem var(--alt-purple);
+}
+.centerContent {
+    text-align: center;
+}
+.active-repo, .archived-repo {
+    background: var(--alt-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s;
+    min-height: 120px;
+    color: var(--input-text);
+}
+.active-repo:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.archived-repo {
+    border: 1px dashed #d9534f;
+    opacity: 0.7;
+    box-shadow: none;
+}
+.archived-repo h3 {
+    color: #d9534f;
+}
+.archived-repo span {
+    color: #d9534f !important;
+}
+
+.ant-input-search {
+    background: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--input-text) !important;
+}
+.ant-input-search input {
+    background: var(--input-bg) !important;
+    color: var(--input-text) !important;
+    border: none !important;
+}
+.ant-input-search input::placeholder {
+    color: var(--input-placeholder) !important;
+    opacity: 1;
+}
+
+select {
+    background: var(--alt-color) !important;
+    color: var(--input-text) !important;
+    border: 1px solid var(--input-border) !important;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.ant-input-search .ant-input-group-addon .ant-btn {
+    background: var(--alt-color) !important;
+    color: var(--input-text) !important;
+    border: none !important;
+}
