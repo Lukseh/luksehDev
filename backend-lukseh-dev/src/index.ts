@@ -65,6 +65,6 @@ const app = new Elysia()
       }
     }
   }))
-  .listen(3000);
+  .listen(3774);
 
 export default app;
