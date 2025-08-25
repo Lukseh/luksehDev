@@ -26,7 +26,7 @@ async function getGithubData() {
 
 const app = new Elysia()
   .use(cors({
-    origin: ["localhost:5173", "api.github.com"]
+    origin: ["localhost:5173", "api.github.com", "lukseh.dev"]
   }))
   .group("/api", (api) =>
     api

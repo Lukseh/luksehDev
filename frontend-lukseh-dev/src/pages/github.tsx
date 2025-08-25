@@ -46,7 +46,13 @@ const GitHubEmbed: React.FC = () => {
 
     useEffect(() => {
         async function fetchData() {
-            const response = await fetch("http://localhost:3000/api/github");
+            const API_ADDRESS = process.env.API_ADDRESS;
+            if (!API_ADDRESS) {
+                console.error("API_ADDRESS is not defined.");
+                setData([]);
+                return;
+            }
+            const response = await fetch(API_ADDRESS);
             const json = await response.json();
             setData(json);
         }
