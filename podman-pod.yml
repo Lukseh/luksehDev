@@ -1,17 +1,12 @@
-# Lukseh.dev Podman Pod Compose
-version: '3.8'
 services:
   backend:
     build: ./backend-lukseh-dev
-    image: lukseh-backend:latest
     env_file:
       - ./backend-lukseh-dev/.env
-    restart: always
   frontend:
     build: ./frontend-lukseh-dev
-    image: lukseh-frontend:latest
-    restart: always
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: docker.io/cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-    restart: always
+    environment:
+      - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
