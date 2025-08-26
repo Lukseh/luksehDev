@@ -4,7 +4,7 @@ WORKDIR /app
 RUN apt-get update -y && apt-get install -y openssl netcat-openbsd
 COPY . .
 RUN bun install
-RUN bun build src/index.ts --outdir dist
+RUN bun build src/index.ts --outdir dist --target bun
 EXPOSE 3000
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
