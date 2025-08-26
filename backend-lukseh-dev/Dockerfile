@@ -1,7 +1,7 @@
 # Lukseh.dev Backend Dockerfile
 FROM oven/bun:latest
 WORKDIR /app
-RUN apt-get update -y && apt-get install -y openssl netcat
+RUN apt-get update -y && apt-get install -y openssl netcat-openbsd
 COPY . .
 RUN bun install
 RUN bun build src/index.ts --outdir dist
