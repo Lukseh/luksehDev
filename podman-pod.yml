@@ -9,6 +9,8 @@ services:
     build: ./backend-lukseh-dev
     env_file:
       - ./backend-lukseh-dev/.env
+    depends_on:
+      - postgres
   frontend:
     build: ./frontend-lukseh-dev
   cloudflared:
