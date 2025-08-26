@@ -3,7 +3,7 @@ import cors from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { Type } from '@sinclair/typebox';
 import { RedisClient } from "bun";
-import { PrismaClient } from './generated/prisma'
+import { PrismaClient } from '@prisma/client'
 
 const db = new PrismaClient()
 
