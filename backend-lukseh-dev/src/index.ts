@@ -71,7 +71,7 @@ async function purgeCache() {
 async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLinkedIn | RedisStoreGithub[] | RedisStoreDiscord | RedisStoreSpotify ) {
   const timestamp = Math.floor(Date.now() / 1000)
   if (Array.isArray(data)) {
-    // Store each repo as a separate hash with a unique key
+    // Store each repo as a separate string with a unique key
     for (const repo of data) {
       if (repo.timestamp > timestamp - refreshTreshold) {
         const stringifiedData = Object.fromEntries(
@@ -98,10 +98,10 @@ async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLi
 }
 async function getStoreData(endpoint: string): Promise<Record<string, unknown> | true> {
   const timestamp = Math.floor(Date.now() / 1000)
-  let redisData = await client.hgetall(`${endpoint}`);
-  if(redisData && redisData.timestamp && Number(redisData.timestamp) < timestamp - refreshTreshold) {
-    redisData = await client.hgetall(`${endpoint}`);
-    if (redisData) {
+  let redisString = await client.get(`${endpoint}`);
+  if (redisString) {
+    const redisData = JSON.parse(redisString);
+    if(redisData && redisData.timestamp && Number(redisData.timestamp) < timestamp - refreshTreshold) {
       const parsedRedisData = Object.fromEntries(
         Object.entries(redisData).map(([key, value]) =>
           value === "true" ? [key, true] :
@@ -121,16 +121,19 @@ async function getGithubData() {
   const now = Math.floor(Date.now() / 1000);
   let cachedRepos: any[] = [];
   for (const key of keys) {
-    const repoData = await client.hgetall(key);
-    if (repoData && repoData.timestamp && Number(repoData.timestamp) > now - refreshTreshold) {
-      const parsedRepo = Object.fromEntries(
-        Object.entries(repoData).map(([k, v]) =>
-          v === "true" ? [k, true] :
-          v === "false" ? [k, false] :
-          [k, v]
-        )
-      );
-      cachedRepos.push(parsedRepo);
+    const repoString = await client.get(key);
+    if (repoString) {
+      const repoData = JSON.parse(repoString);
+      if (repoData && repoData.timestamp && Number(repoData.timestamp) > now - refreshTreshold) {
+        const parsedRepo = Object.fromEntries(
+          Object.entries(repoData).map(([k, v]) =>
+            v === "true" ? [k, true] :
+            v === "false" ? [k, false] :
+            [k, v]
+          )
+        );
+        cachedRepos.push(parsedRepo);
+      }
     }
   }
   if (cachedRepos.length > 0) {
@@ -162,18 +165,21 @@ async function getGithubData() {
 }
 async function getlinkedInData() {
   // Try to get cached data from Redis
-  const redisData = await client.hgetall("/linkedin");
+  const redisString = await client.get("/linkedin");
   const now = Math.floor(Date.now() / 1000);
-  if (redisData && redisData.timestamp && Number(redisData.timestamp) > now - refreshTreshold) {
-    // Parse booleans and return cached data
-    const parsedRedisData = Object.fromEntries(
-      Object.entries(redisData).map(([key, value]) =>
-        value === "true" ? [key, true] :
-        value === "false" ? [key, false] :
-        [key, value]
-      )
-    );
-    return parsedRedisData;
+  if (redisString) {
+    const redisData = JSON.parse(redisString);
+    if (redisData && redisData.timestamp && Number(redisData.timestamp) > now - refreshTreshold) {
+      // Parse booleans and return cached data
+      const parsedRedisData = Object.fromEntries(
+        Object.entries(redisData).map(([key, value]) =>
+          value === "true" ? [key, true] :
+          value === "false" ? [key, false] :
+          [key, value]
+        )
+      );
+      return parsedRedisData;
+    }
   }
   // If cache is stale or missing, fetch new data
   const token = process.env.LINEDIN_TOKEN;
@@ -196,18 +202,21 @@ async function getlinkedInData() {
 }
 async function getDiscordData() {
   // Try to get cached data from Redis
-  const redisData = await client.hgetall("/discord");
+  const redisString = await client.get("/discord");
   const now = Math.floor(Date.now() / 1000);
-  if (redisData && redisData.timestamp && Number(redisData.timestamp) > now - refreshTreshold) {
-    // Parse booleans and return cached data
-    const parsedRedisData = Object.fromEntries(
-      Object.entries(redisData).map(([key, value]) =>
-        value === "true" ? [key, true] :
-        value === "false" ? [key, false] :
-        [key, value]
-      )
-    );
-    return parsedRedisData;
+  if (redisString) {
+    const redisData = JSON.parse(redisString);
+    if (redisData && redisData.timestamp && Number(redisData.timestamp) > now - refreshTreshold) {
+      // Parse booleans and return cached data
+      const parsedRedisData = Object.fromEntries(
+        Object.entries(redisData).map(([key, value]) =>
+          value === "true" ? [key, true] :
+          value === "false" ? [key, false] :
+          [key, value]
+        )
+      );
+      return parsedRedisData;
+    }
   }
   // If cache is stale or missing, fetch new data
   const token = process.env.DISCORD_TOKEN;
