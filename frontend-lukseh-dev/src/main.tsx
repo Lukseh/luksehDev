@@ -11,6 +11,7 @@ import NavBar from './components/nav';
 // Pages import
 import Index from './pages/index';
 import GitHub from './pages/github';
+import CV from './pages/cv';
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,25 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <GitHub/>
+      }
+    ],
+  },
+  {
+    path: '/cv',
+    element: (
+      <Layout>
+        <NavBar />
+        <main style={{ padding: "2vw" }}>
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <Outlet />
+          </React.Suspense>
+        </main>
+      </Layout>
+    ),
+    children: [
+      {
+        index: true,
+        element: <CV/>
       }
     ],
   }

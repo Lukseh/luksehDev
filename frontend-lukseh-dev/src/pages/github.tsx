@@ -22,16 +22,16 @@ function createRepoCards(data: Repo[], search: string, sort: string, showArchive
             {filtered.map((repo: Repo, idx) => (
                 <Col key={repo.name + idx} span={8}>
                     <div className={repo.archived ? "archived-repo" : "active-repo"} style={{ border: '1px solid #eee', padding: 16, borderRadius: 8 }}>
-                        <h3>{repo.name}</h3>
-                        <p style={{ minHeight: 'var(--font-size)' }}>{repo.description ? repo.description : "\u00A0"}</p>
+                        <h3 id="repo-name">{repo.name}</h3>
+                        <p id="repo-description" style={{ minHeight: 'var(--font-size)' }}>{repo.description ? repo.description : "\u00A0"}</p>
                         {repo.homepage && typeof repo.homepage === 'string' && repo.homepage !== '' && (
                             <p>Homepage: <a href={repo.homepage} target="_blank" rel="noopener noreferrer">{repo.homepage}</a></p>
                         )}
-                        <p>Language: {repo.language ? repo.language : <span style={{color: '#888'}}>Unknown</span>}</p>
+                        <p id="repo-language">Language: {repo.language ? repo.language : <span style={{color: '#888'}}>Unknown</span>}</p>
                         <p>License: {repo.license && typeof repo.license === 'string' && repo.license !== '' ? repo.license : <span style={{color: '#888'}}>None</span>}</p>
                         <a href={repo.url} target="_blank" rel="noopener noreferrer">
                             View on GitHub
-                        </a>
+                        </a><br />
                         {repo.archived && <span style={{color: 'red', fontWeight: 'bold'}}>Archived</span>}
                     </div>
                 </Col>
@@ -65,7 +65,7 @@ const GitHubEmbed: React.FC = () => {
                     onChange={e => setSearch(e.target.value)}
                     style={{ flex: 1 }}
                 />
-                <select value={sort} onChange={e => setSort(e.target.value)} style={{ padding: 8, borderRadius: 4 }}>
+                <select id="sort-repos" value={sort} onChange={e => setSort(e.target.value)} style={{ padding: 8, borderRadius: 4 }}>
                     <option value="name">Sort by Name</option>
                     <option value="language">Sort by Language</option>
                 </select>

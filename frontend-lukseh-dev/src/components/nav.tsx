@@ -1,5 +1,5 @@
 import { Layout, Menu } from 'antd';
-import { HomeOutlined, GithubOutlined } from '@ant-design/icons';
+import { HomeOutlined, GithubOutlined, PaperClipOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
@@ -18,6 +18,11 @@ const items: MenuItem[] = [
         key: '/github',
         icon: <GithubOutlined style={{ fontSize: '1.5rem' }}/>,
         label: 'GitHub',
+    },
+    {
+        key: '/cv',
+        icon: <PaperClipOutlined style={{ fontSize: '1.5rem' }}/>,
+        label: 'CV',
     }
 ];
 
