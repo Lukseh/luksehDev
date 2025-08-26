@@ -5,6 +5,10 @@ services:
     image: docker.io/postgres:latest
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${PG_PASSWD}
+      - POSTGRES_DB=luksehdev
   backend:
     build: ./backend-lukseh-dev
     env_file:
