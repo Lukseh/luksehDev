@@ -1,4 +1,8 @@
 services:
+  redis:
+    image: docker.io/redis/redis-stack-server:latest
+  postgres:
+    image: docker.io/postgres:latest
   backend:
     build: ./backend-lukseh-dev
     env_file:
