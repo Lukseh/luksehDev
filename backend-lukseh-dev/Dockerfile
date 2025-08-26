@@ -2,8 +2,8 @@
 FROM oven/bun:latest
 WORKDIR /app
 RUN apt-get update -y && apt-get install -y openssl netcat-openbsd
-RUN bunx prisma generate --schema=prisma/schema.prisma
 COPY . .
+RUN bunx prisma generate --schema=prisma/schema.prisma
 RUN bun install
 RUN bun build src/index.ts --outdir dist --target bun
 EXPOSE 3000
