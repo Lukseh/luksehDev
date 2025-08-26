@@ -2,20 +2,25 @@ import { Elysia } from "elysia";
 import cors from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { Type } from '@sinclair/typebox';
-import { createClient } from 'redis';
+import { RedisClient } from "bun";
 import { PrismaClient } from './generated/prisma'
 
 const db = new PrismaClient()
 
-const client = createClient({
-  url: `${process.env.REDIS_URL}`
-});
+const client = new RedisClient();
 
-client.on('error', err => console.log('Redis Client Error', err));
 
-await client.connect();
+// If you want to check connectivity, you can use:
+async function checkRedisConnection() {
+  try {
+    await client.ping();
+    console.log("Redis connection successful.");
+  } catch (err) {
+    console.error("Redis connection failed:", err);
+  }
+}
+checkRedisConnection();
 
-// const timestamp = Math.floor(Date.now() / 1000)
 const refreshTreshold = 21600; // 6 hours
 
 
@@ -51,13 +56,16 @@ type RedisStoreSpotify = {
 }
 
 async function purgeCache() {
-  const githubKeys = await client.keys('/github:*');
+  const githubKeys = await client.keys("/github:*");
   if (githubKeys.length > 0) {
-    await client.del(githubKeys);
+    await client.del(...githubKeys);
   }
-  await client.del('/linkedin');
-  await client.del('/discord');
-  await client.del('/spotify*');
+  await client.del("/linkedin");
+  await client.del("/discord");
+  const spotifyKeys = await client.keys("/spotify*");
+  if (spotifyKeys.length > 0) {
+    await client.del(...spotifyKeys);
+  }
   return { status: "Cache purged" };
 }
 async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLinkedIn | RedisStoreGithub[] | RedisStoreDiscord | RedisStoreSpotify ) {
@@ -71,7 +79,7 @@ async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLi
             typeof value === "boolean" ? [key, value.toString()] : [key, value]
           )
         );
-        await client.hSet(`/github:${repo.name}`, stringifiedData);
+        await client.set(`/github:${repo.name}`, JSON.stringify(stringifiedData));
         console.log(`Storing data for /github:${repo.name} in Redis with object:\n${JSON.stringify(stringifiedData)}`);
       }
     }
@@ -82,38 +90,38 @@ async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLi
           typeof value === "boolean" ? [key, value.toString()] : [key, value]
         )
       );
-      await client.hSet(`${endpoint}`, stringifiedData);
+      await client.set(`${endpoint}`, JSON.stringify(stringifiedData));
       console.log("Storing data for " + endpoint + " in Redis with object: " + JSON.stringify(stringifiedData));
     }
     else getStoreData(endpoint);
   }
 }
-
 async function getStoreData(endpoint: string): Promise<Record<string, unknown> | true> {
   const timestamp = Math.floor(Date.now() / 1000)
-  let redisData = await client.hGetAll(`${endpoint}`);
-  if(Number(redisData.timestamp) < timestamp - refreshTreshold) {
-    let redisData = await client.hGetAll(`${endpoint}`);
-    const parsedRedisData = Object.fromEntries(
-      Object.entries(redisData).map(([key, value]) =>
-        value === "true" ? [key, true] :
-        value === "false" ? [key, false] :
-        [key, value]
-      )
-    );
-    console.log(parsedRedisData);
-    return parsedRedisData;
+  let redisData = await client.hgetall(`${endpoint}`);
+  if(redisData && redisData.timestamp && Number(redisData.timestamp) < timestamp - refreshTreshold) {
+    redisData = await client.hgetall(`${endpoint}`);
+    if (redisData) {
+      const parsedRedisData = Object.fromEntries(
+        Object.entries(redisData).map(([key, value]) =>
+          value === "true" ? [key, true] :
+          value === "false" ? [key, false] :
+          [key, value]
+        )
+      );
+      console.log(parsedRedisData);
+      return parsedRedisData;
+    }
   }
   return true;
 }
-
 async function getGithubData() {
   // Try to get all cached repos from Redis
-  const keys = await client.keys('/github:*');
+  const keys = await client.keys("/github:*");
   const now = Math.floor(Date.now() / 1000);
   let cachedRepos: any[] = [];
   for (const key of keys) {
-    const repoData = await client.hGetAll(key);
+    const repoData = await client.hgetall(key);
     if (repoData && repoData.timestamp && Number(repoData.timestamp) > now - refreshTreshold) {
       const parsedRepo = Object.fromEntries(
         Object.entries(repoData).map(([k, v]) =>
@@ -152,10 +160,9 @@ async function getGithubData() {
   await storeData("/github", parsedData);
   return parsedData;
 }
-
 async function getlinkedInData() {
   // Try to get cached data from Redis
-  const redisData = await client.hGetAll("/linkedin");
+  const redisData = await client.hgetall("/linkedin");
   const now = Math.floor(Date.now() / 1000);
   if (redisData && redisData.timestamp && Number(redisData.timestamp) > now - refreshTreshold) {
     // Parse booleans and return cached data
@@ -187,10 +194,9 @@ async function getlinkedInData() {
   await storeData("/linkedin", parsedData);
   return parsedData;
 }
-
 async function getDiscordData() {
   // Try to get cached data from Redis
-  const redisData = await client.hGetAll("/discord");
+  const redisData = await client.hgetall("/discord");
   const now = Math.floor(Date.now() / 1000);
   if (redisData && redisData.timestamp && Number(redisData.timestamp) > now - refreshTreshold) {
     // Parse booleans and return cached data

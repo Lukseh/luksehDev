@@ -6,10 +6,12 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@atakan75/elysia-redis": "^0.1.8",
     "@elysiajs/cors": "^1.3.3",
     "@elysiajs/jwt": "^1.3.3",
     "@elysiajs/swagger": "^1.3.1",
     "@prisma/client": "^6.14.0",
+    "@upstash/redis": "^1.35.3",
     "elysia": "latest",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.14.0",
