@@ -3,6 +3,8 @@ services:
     image: docker.io/redis/redis-stack-server:latest
   postgres:
     image: docker.io/postgres:latest
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
   backend:
     build: ./backend-lukseh-dev
     env_file:
@@ -14,3 +16,6 @@ services:
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     environment:
       - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+
+volumes:
+  postgres-data:
