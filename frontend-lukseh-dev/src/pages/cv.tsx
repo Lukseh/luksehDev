@@ -88,7 +88,7 @@ const CV: React.FC = () => {
     if (cvEl && window.VANTA && typeof window.VANTA.NET === "function") {
       vantaEffect = window.VANTA.NET({
         el: cvEl,
-        mouseControls: false,
+        mouseControls: true,
         touchControls: false,
         gyroControls: false,
         minHeight: 200.00,
