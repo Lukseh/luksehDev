@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import cors from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { Type } from '@sinclair/typebox';
@@ -6,9 +6,8 @@ import { RedisClient } from "bun";
 import { PrismaClient } from '@prisma/client'
 
 const db = new PrismaClient()
-
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3774;
 const client = new RedisClient();
-
 
 // If you want to check connectivity, you can use:
 async function checkRedisConnection() {
@@ -56,17 +55,22 @@ type RedisStoreSpotify = {
 }
 
 async function purgeCache() {
-  const githubKeys = await client.keys("/github:*");
-  if (githubKeys.length > 0) {
-    await client.del(...githubKeys);
+  try {
+    const githubKeys = await client.keys("/github:*") || [];
+    if (githubKeys.length > 0) {
+      await client.del(...githubKeys);
+    }
+    await client.del("/linkedin");
+    await client.del("/discord");
+    const spotifyKeys = await client.keys("/spotify:*") || [];
+    if (spotifyKeys.length > 0) {
+      await client.del(...spotifyKeys);
+    }
+    return { status: "Cache purged" };
+  } catch (error) {
+    console.error("Error purging cache:", error);
+    return { status: "Error purging cache", error: error instanceof Error ? error.message : String(error) };
   }
-  await client.del("/linkedin");
-  await client.del("/discord");
-  const spotifyKeys = await client.keys("/spotify*");
-  if (spotifyKeys.length > 0) {
-    await client.del(...spotifyKeys);
-  }
-  return { status: "Cache purged" };
 }
 async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLinkedIn | RedisStoreGithub[] | RedisStoreDiscord | RedisStoreSpotify ) {
   const timestamp = Math.floor(Date.now() / 1000)
@@ -93,7 +97,6 @@ async function storeData(endpoint: string, data: RedisStoreGithub | RedisStoreLi
       await client.set(`${endpoint}`, JSON.stringify(stringifiedData));
       console.log("Storing data for " + endpoint + " in Redis with object: " + JSON.stringify(stringifiedData));
     }
-    else getStoreData(endpoint);
   }
 }
 async function getStoreData(endpoint: string): Promise<Record<string, unknown> | true> {
@@ -101,18 +104,29 @@ async function getStoreData(endpoint: string): Promise<Record<string, unknown> |
   let redisString = await client.get(`${endpoint}`);
   if (redisString) {
     const redisData = JSON.parse(redisString);
-    if(redisData && redisData.timestamp && Number(redisData.timestamp) < timestamp - refreshTreshold) {
-      const parsedRedisData = Object.fromEntries(
-        Object.entries(redisData).map(([key, value]) =>
-          value === "true" ? [key, true] :
-          value === "false" ? [key, false] :
-          [key, value]
-        )
-      );
-      console.log(parsedRedisData);
-      return parsedRedisData;
+    if (redisData && redisData.timestamp) {
+      if (Number(redisData.timestamp) > timestamp - refreshTreshold) {
+        const parsedRedisData = Object.fromEntries(
+          Object.entries(redisData).map(([key, value]) =>
+            value === "true" ? [key, true] :
+            value === "false" ? [key, false] :
+            [key, value]
+          )
+        );
+        return parsedRedisData;
+      } else {
+        const parsedRedisData = Object.fromEntries(
+          Object.entries(redisData).map(([key, value]) =>
+            value === "true" ? [key, true] :
+            value === "false" ? [key, false] :
+            [key, value]
+          )
+        );
+        return parsedRedisData;
+      }
     }
   }
+  // No cache found
   return true;
 }
 async function getGithubData() {
@@ -241,6 +255,9 @@ async function getDiscordData() {
 async function getSkills() {
   return await db.skill.findMany();
 }
+async function postSkills() {
+
+}
 
 function privacyPolicy() {
   return ({
@@ -267,14 +284,55 @@ async function getSpotifyAccessToken() {
 }
 
 async function getSpotifyProfile() {
-  const accessToken = await getSpotifyAccessToken();
-  const response = await fetch('https://api.spotify.com/v1/me', {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
+  const now = Math.floor(Date.now() / 1000);
+  const redisData = await getStoreData(`/spotify/profile`);
+  if (
+    redisData &&
+    redisData !== true &&
+    typeof redisData === "object" &&
+    redisData.timestamp &&
+    Number(redisData.timestamp) > now - refreshTreshold &&
+    redisData.data
+  ) {
+    try {
+      // Cache is fresh and valid, return it
+      return JSON.parse(redisData.data as string);
+    } catch {
+      // Cache is corrupted, continue to fetch new data below
     }
-  });
-  return await response.json();
+  } else if (
+    redisData &&
+    redisData !== true &&
+    typeof redisData === "object" &&
+    redisData.timestamp &&
+    Number(redisData.timestamp) > now - refreshTreshold
+  ) {
+    // Cache is fresh but has no .data, just return it
+    return redisData;
+  } else {
+    // Cache is missing, stale, or corrupted, fetch new data
+    const accessToken = await getSpotifyAccessToken();
+    const response = await fetch('https://api.spotify.com/v1/me', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    const data = await response.json();
+    const parsedData = {
+      country: data.country,
+      nickname: data.display_name,
+      type: data.product,
+      url: data.external_urls?.spotify,
+      timestamp: now
+    };
+    await storeData(`/spotify/profile`, {
+      timestamp: now,
+      data: JSON.stringify(parsedData)
+    });
+    return parsedData;
+  }
 }
+
 async function getSpotifyData(dataType: string) {
   const now = Math.floor(Date.now() / 1000);
   // Try to get cached data from Redis
@@ -362,8 +420,44 @@ const app = new Elysia()
           tags: ["API"]
         }
       })
-      .get("/skills", getSkills)
-      .get("/discord", async () => await getDiscordData())
+      .get("/skills", getSkills, {
+        detail: { tags: ["API"] },
+      })
+    .post("/skills", async ({ headers, body }: { headers: Record<string, string | undefined>, body: { name: string, level: number } }) => {
+      const authHeader = headers.authorization ?? '';
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return { status: "Unauthorized" };
+      }
+      const token = authHeader.slice('Bearer '.length);
+      if (token.trim() !== JWT_SECRET) {
+        return { status: "Unauthorized" };
+      }
+      if (!body.name || typeof body.level !== "number") {
+        return { status: "Invalid parameters" };
+      }
+      try {
+        const skill = await db.skill.create({
+          data: {
+            name: body.name,
+            level: body.level
+          }
+        });
+        return { status: "Skill created", skill };
+      } catch (error) {
+        return { status: "Error", error: error instanceof Error ? error.message : String(error) };
+      }
+    }, {
+      body: t.Object({
+        name: t.String(),
+        level: t.Number()
+      }),
+      summary: "Add a skill",
+      detail: { tags: ["API"] },
+      response: { 200: Type.Object({ status: Type.String(), skill: Type.Optional(Type.Any()) }) }
+    })
+      .get("/discord", async () => await getDiscordData(), {
+        detail: { tags: ["API"] },
+      })
       .get("/github", async () => await getGithubData(), {
         summary: "Get GitHub repos",
         detail: {
@@ -383,7 +477,9 @@ const app = new Elysia()
           ),
         },
       })
-      .get("/linkedin", async () => await getlinkedInData())
+      .get("/linkedin", async () => await getlinkedInData(), {
+        detail: { tags: ["API"] },
+      })
       .get("/purge-cache", async ({ headers }) => {
         const authHeader = headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -398,14 +494,23 @@ const app = new Elysia()
       }, {
         summary: "Purge Redis cache",
         detail: { tags: ["API"] },
-        response: { 200: Type.Object({ status: Type.String() }) }
       })
       .group("/spotify", (spotify) =>
       spotify
-      .get("/profile", async () => await getSpotifyProfile())
-      .get("/:dataType", async ({ params }) => await getSpotifyData(params.dataType))
+      .get("/profile", async () => await getSpotifyProfile(),{
+        summary: "show profile information from Spotify",
+        detail: { tags: ["API"] },
+      })
+      .get("/:dataType", async ({ params }) => await getSpotifyData(params.dataType),{
+        summary: "show spotify data for dataType",
+        detail: { tags: ["API"] },
+      })
       )
-      .get("/privacy-policy", () => privacyPolicy())
+      .get("/privacy-policy", () => privacyPolicy(),{
+        summary: "show privacy policy of API. not planned to work but is here cause idk ^-^",
+        detail: { tags: ["API"] },
+        response: { 200: Type.Object({ status: Type.String() }) }
+      })
   )
   .use(swagger({
     path: "/docs",
@@ -416,6 +521,6 @@ const app = new Elysia()
       }
     }
   }))
-  .listen(3774);
+  .listen(PORT);
 
 export default app;

@@ -57,7 +57,7 @@ const GitHubEmbed: React.FC = () => {
     }, []);
 
     return (
-        <>
+        <div className="pageDiv">
             <div style={{ marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
                 <Input.Search
                     placeholder="Search repos..."
@@ -78,7 +78,7 @@ const GitHubEmbed: React.FC = () => {
                 />
             </div>
             {createRepoCards(data || [], search, sort, showArchived)}
-        </>
+        </div>
     );
 }
 
